@@ -1,6 +1,8 @@
 <div align="center">
-<img width="230" alt="image" src="https://github.com/Karmpatel960/HostelKube/assets/96860884/5c3fb24a-086e-4379-89fe-4668fa63b48d">
+ <img width="137" alt="image" src="https://github.com/Karmpatel960/HostelKube/assets/96860884/6005376f-4d3b-42bc-b654-f1e1af1eebd7">
 </div>
+
+
 
 # HostelKube
  HostelKube helps to improve the management system of hostels.
