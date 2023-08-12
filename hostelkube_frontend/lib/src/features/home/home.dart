@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatefulWidget {
+class HomeScreen extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _HomeScreenState extends State<HomeScreen> {
   String message = 'Hello, Flutter!';
 
   void changeMessage() {
@@ -20,26 +16,24 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Simple Flutter App'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                message,
-                style: TextStyle(fontSize: 24),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: changeMessage,
-                child: Text('Press Me'),
-              ),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home Screen'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              message,
+              style: TextStyle(fontSize: 24),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: changeMessage,
+              child: Text('Press Me'),
+            ),
+          ],
         ),
       ),
     );

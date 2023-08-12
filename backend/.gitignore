@@ -1,0 +1,31 @@
+# Node.js
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Environment variables
+.env
+
+# Build files
+dist/
+build/
+
+# Dependency lock files
+package-lock.json
+yarn.lock
+
+# IDE files
+.idea/
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Server logs
+log/
+
+# Ignore server configuration files if any
+config.js
+config.json
