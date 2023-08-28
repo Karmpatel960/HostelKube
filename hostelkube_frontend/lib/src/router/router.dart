@@ -17,6 +17,9 @@ class Routes {
       case loginRoute:
         return MaterialPageRoute(builder: (_) => LoginScreen());
 
+      case SignUpRoute:
+        return MaterialPageRoute(builder: (_) => SignUpScreen());
+
       default:
         return MaterialPageRoute(builder: (_) => NotFoundScreen());
     }
