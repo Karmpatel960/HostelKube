@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      
       onGenerateRoute: Routes.generateRoute,
       initialRoute: Routes.homeRoute, // You can set your desired initial route here
     );
