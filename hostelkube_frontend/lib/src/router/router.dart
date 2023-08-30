@@ -5,6 +5,7 @@ class Routes {
   static const String homeRoute = '/';
   static const String adminRoute = '/admin';
   static const String loginRoute = '/login';
+  static const String SplashRoute = '/splash';
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -16,6 +17,10 @@ class Routes {
 
       case loginRoute:
         return MaterialPageRoute(builder: (_) => LoginScreen());
+
+      case SplashRoute:
+        return MaterialPageRoute(builder: (_) => SplashScreen());
+
 
       default:
         return MaterialPageRoute(builder: (_) => NotFoundScreen());
