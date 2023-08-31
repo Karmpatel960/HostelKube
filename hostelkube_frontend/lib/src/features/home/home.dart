@@ -6,7 +6,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hostel Management System',
+      title: 'HostelKube',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Poppins',
@@ -222,11 +222,6 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-      ),
     );
   }
 
@@ -280,7 +275,7 @@ class TopBox extends StatelessWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
                 'Room Number: 101',
@@ -365,9 +360,10 @@ class MyImageCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     return CarouselSlider(
       items: [
-        Image.asset('assets/Recta.png'),
-        Image.asset('assets/image2.png'),
-        Image.asset('assets/image3.png'),
+        Image.asset('assets/Rectangle5.png'),
+        Image.asset('assets/pexels-cottonbro-studio-5137969.jpg'),
+        Image.asset('assets/pexels-pixabay-50987.jpg'),
+        Image.asset('assets/pexels-spencer-davis-4393021.jpg'),
       ],
       options: CarouselOptions(
         height: 220,
