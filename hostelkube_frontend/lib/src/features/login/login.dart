@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '/src/router/router.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -8,10 +9,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  int currentImageIndex = 0;
+  int currentPage = 0;
+  PageController _pageController = PageController();
+
   List<String> imagePaths = [
     'assets/Rectangle5.png', // Replace with actual image paths
-    'assets/Rectangle6.png',
+    'assets/pexels-cottonbro-studio-5137969.jpg',
+    'assets/pexels-pixabay-50987.jpg',
+    'assets/pexels-spencer-davis-4393021.jpg',
     // Add more image paths as needed
   ];
 
@@ -22,10 +27,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void startImageRotation() {
-    Timer.periodic(Duration(seconds: 5), (Timer timer) {
+    Timer.periodic(Duration(seconds: 4), (Timer timer) {
       setState(() {
-        currentImageIndex = (currentImageIndex + 1) % imagePaths.length;
+        currentPage = (currentPage + 1) % imagePaths.length;
       });
+      _pageController.animateToPage(
+        currentPage,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
     });
   }
 
@@ -49,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           Expanded(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+              padding: EdgeInsets.all(20),
               child: Center(
                 child: Container(
                   decoration: BoxDecoration(
@@ -58,9 +68,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(30),
-                    child: Image.asset(
-                      imagePaths[currentImageIndex],
-                      fit: BoxFit.cover,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: imagePaths.length,
+                      onPageChanged: (index) {
+                        setState(() {
+                          currentPage = index;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        return Image.asset(
+                          imagePaths[index],
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -97,6 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ElevatedButton(
                         onPressed: () {
                           // Handle Sign In Button Press
+                          Navigator.of(context).pushReplacementNamed(Routes.signInRoute);
                         },
                         style: ElevatedButton.styleFrom(
                           primary: Colors.black,
@@ -110,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ElevatedButton(
                         onPressed: () {
                           // Handle Sign Up Button Press
+                          Navigator.of(context).pushReplacementNamed(Routes.signUpRoute);
                         },
                         style: ElevatedButton.styleFrom(
                           primary: Colors.black,
@@ -131,3 +156,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+

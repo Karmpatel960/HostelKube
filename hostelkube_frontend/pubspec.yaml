@@ -131,6 +131,9 @@ flutter:
     - assets/rectangle3.svg
     - assets/Rectangle5.png
     - assets/rectangle10.svg
+    - assets/pexels-cottonbro-studio-5137969.jpg
+    - assets/pexels-pixabay-50987.jpg
+    - assets/pexels-spencer-davis-4393021.jpg
 
   # fonts:
     # Add your custom fonts if needed
