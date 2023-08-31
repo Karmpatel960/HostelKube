@@ -7,7 +7,14 @@ class Routes {
   static const String loginRoute = '/login';
   static const String SplashRoute = '/splash';
 
+  static bool _isFirstTime = true;
+
   static Route<dynamic>? generateRoute(RouteSettings settings) {
+    if (_isFirstTime) {
+      _isFirstTime = false;
+      return MaterialPageRoute(builder: (_) => SplashScreen());
+    }
+
     switch (settings.name) {
       case homeRoute:
         return MaterialPageRoute(builder: (_) => HomeScreen());
@@ -18,12 +25,9 @@ class Routes {
       case loginRoute:
         return MaterialPageRoute(builder: (_) => LoginScreen());
 
-      case SplashRoute:
-        return MaterialPageRoute(builder: (_) => SplashScreen());
-
-
       default:
         return MaterialPageRoute(builder: (_) => NotFoundScreen());
     }
   }
 }
+
