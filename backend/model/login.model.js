@@ -1,35 +1,65 @@
-const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcryptjs');
-const User = require('./models/User'); // Assuming you have a User model
+const mongoose = require("mongoose");
+const validator = require("validator");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const SECRECT_KEY = "abcdefghijklmnop";
 
-// POST /api/login
-router.post('/', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Find the user by email
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Compare passwords
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // User authenticated successfully
-    // You can generate a token here and send it in the response
-
-    res.status(200).json({ message: 'Login successful' });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate(value) {
+      if (!validator.isEmail(value)) {
+        throw new Error("Not Valid Email");
+      }
+    },
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,
+  },
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: false,
+      },
+    },
+  ],
 });
 
-module.exports = router;
+// hash password
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 12);
+  }
+
+  next();
+});
+
+// token generate
+userSchema.methods.generateAuthtoken = async function () {
+  try {
+    let newtoken = jwt.sign({ _id: this._id }, SECRECT_KEY, {
+      expiresIn: "1d",
+    });
+
+    this.tokens = this.tokens.concat({ token: newtoken });
+    await this.save();
+    return newtoken;
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+// creating model
+const users = new mongoose.model("users", userSchema);
+
+module.exports = users;
