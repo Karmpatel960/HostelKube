@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import '/src/router/router.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -119,8 +120,7 @@ class HomePage extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    // Handle the button tap for Local Laundry Service
-                    // Add your code here
+                  Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
                   },
                   child: ServiceContainer(
                     iconData: Icons.local_laundry_service,
@@ -203,20 +203,28 @@ class HomePage extends StatelessWidget {
             children: [
               IconButton(
                 icon: Icon(Icons.home),
-                onPressed: () {},
+                onPressed: () {
+                   Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
+                },
               ),
               IconButton(
                 icon: Icon(Icons.attach_money),
-                onPressed: () {},
+                onPressed: () {
+                   Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
+                },
               ),
               SizedBox(width: 40),
               IconButton(
                 icon: Icon(Icons.menu),
-                onPressed: () {},
+                onPressed: () {
+                   Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
+                },
               ),
               IconButton(
                 icon: Icon(Icons.person),
-                onPressed: () {},
+                onPressed: () {
+                   Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
+                },
               ),
             ],
           ),
@@ -275,7 +283,7 @@ class TopBox extends StatelessWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Text(
                 'Room Number: 101',
