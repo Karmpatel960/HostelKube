@@ -25,6 +25,14 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6,
   },
+  phone_no: {
+    type: String,
+    required: true,
+    minlength: 10,
+    trim: true,
+    // match : /^[+]{1}(?:[0-9\-\(\)\/\.]\s?){6, 15}[0-9]{1}$/
+    // match : /^[+]{1}?:[0-9\\-\\(\\)\\/""\\.]\\s?{6, 15}[0-9]{1}$/
+  },
   tokens: [
     {
       token: {
