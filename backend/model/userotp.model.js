@@ -5,7 +5,7 @@ const userOtpSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
+    unique: false,
     validate(value) {
       if (!validator.isEmail(value)) {
         throw new Error("Not Valid Email");
@@ -13,7 +13,7 @@ const userOtpSchema = new mongoose.Schema({
     },
   },
   otp: {
-    type: String,
+    type: Number,
     required: true,
   },
 });
