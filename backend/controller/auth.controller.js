@@ -26,10 +26,12 @@ const mailGenerator = new mailgen({
 
 
 
-exports.userregister = async (req, res) => {
-  const { name, email, password, phone_no } = req.body;
 
-  if (!name || !email || !password || !phone_no) {
+
+exports.userregister = async (req, res) => {
+  const { name, email, password, phone_no , role } = req.body;
+
+  if (!name || !email || !password || !phone_no || !role) {
     res.status(400).json({ error: "Please Enter All Input Data" });
   }
 
@@ -44,6 +46,7 @@ exports.userregister = async (req, res) => {
         email,
         password,
         phone_no,
+        role
       });
 
       const storeData = await userregister.save();
@@ -54,6 +57,8 @@ exports.userregister = async (req, res) => {
     res.status(400).json({ error: "Invalid Details", error });
   }
 };
+
+
 
 exports.userOtpSend = async (req, res) => {
   const { email } = req.body;

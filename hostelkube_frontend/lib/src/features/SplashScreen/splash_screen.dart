@@ -15,7 +15,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Simulate some time-taking initialization process.
     Future.delayed(Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, Routes.loginRoute); 
+      Navigator.pushReplacementNamed(context, Routes.welcomeRoute); 
     });
   }
 

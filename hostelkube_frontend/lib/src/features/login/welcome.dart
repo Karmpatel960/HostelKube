@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hostelkube_frontend/src/features/features.dart';
+import '/src/router/router.dart';
+
+
 
 
 class Welcome extends StatelessWidget {
@@ -20,11 +24,10 @@ class WelcomePage extends StatelessWidget {
         children: [
           // Background Image
           Image.asset(
-            'assets/background_image.jpg', // Replace with your background image path
+            'assets/background.png', // Replace with your background image path
             fit: BoxFit.cover,
           ),
 
-          // White Text Overlay and Get Started Button
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -43,21 +46,26 @@ class WelcomePage extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Add navigation logic here
-                      },
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.white, // Button color
-                      ),
-                      child: Text(
-                        'Get Started',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
+                   ElevatedButton(
+  onPressed: () {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => LoginScreen(), // Replace with your LoginScreen widget
+      ),
+    );
+  },
+  style: ElevatedButton.styleFrom(
+    primary: Colors.white, // Button color
+  ),
+  child: Text(
+    'Get Started',
+    style: TextStyle(
+      color: Colors.black,
+      fontSize: 18,
+    ),
+  ),
+),
+
                   ],
                 ),
               ),

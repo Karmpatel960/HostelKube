@@ -28,10 +28,15 @@ const userSchema = new mongoose.Schema({
   phone_no: {
     type: String,
     required: true,
-    minlength: 10,
-    trim: true,
+    // minlength: 10,
+    // trim: true,
     // match : /^[+]{1}(?:[0-9\-\(\)\/\.]\s?){6, 15}[0-9]{1}$/
     // match : /^[+]{1}?:[0-9\\-\\(\\)\\/""\\.]\\s?{6, 15}[0-9]{1}$/
+  },
+  role: {
+    type: String,
+    enum: ["user", "admin", "employee"], 
+    default: "user", 
   },
   tokens: [
     {

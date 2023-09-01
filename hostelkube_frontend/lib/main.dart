@@ -5,7 +5,6 @@ void main() {
   runApp(MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -14,9 +13,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      
       onGenerateRoute: Routes.generateRoute,
-      initialRoute: Routes.homeRoute, // You can set your desired initial route here
+      initialRoute: Routes.homeRoute, // Set your desired initial route here
     );
   }
 }

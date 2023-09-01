@@ -8,6 +8,7 @@ class Routes {
   static const String signUpRoute = '/signup';
   static const String signInRoute = '/signin';
   static const String SplashRoute = '/splash';
+  static const String welcomeRoute = '/welcome';
 
   static bool _isFirstTime = true;
 
@@ -28,10 +29,13 @@ class Routes {
         return MaterialPageRoute(builder: (_) => LoginScreen());
 
       case signUpRoute: // Route for sign-up
-        return MaterialPageRoute(builder: (_) => SignUpScreen());
+        return MaterialPageRoute(builder: (_) => SignUpPage());
 
       case signInRoute: 
         return MaterialPageRoute(builder: (_) => SignInScreen());
+
+      case welcomeRoute:
+        return MaterialPageRoute(builder: (_) => Welcome());
 
       default:
         return MaterialPageRoute(builder: (_) => NotFoundScreen());

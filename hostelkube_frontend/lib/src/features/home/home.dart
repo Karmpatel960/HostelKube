@@ -111,7 +111,6 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.attach_money),
               title: Text('Fee Payment'),
               onTap: () {
-                Navigator.pop(context);
                 // Add code to handle fee payment here
               },
             ),
@@ -119,7 +118,6 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.lightbulb_outline),
               title: Text('Light Bill Payment'),
               onTap: () {
-                Navigator.pop(context);
                 // Add code to handle light bill payment here
               },
             ),
@@ -127,7 +125,6 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.receipt),
               title: Text('Bill Receipt'),
               onTap: () {
-                Navigator.pop(context);
                 // Add code to handle bill receipt here
               },
             ),
@@ -135,7 +132,6 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.error),
               title: Text('Any Issue'),
               onTap: () {
-                Navigator.pop(context);
                 // Add code to handle any issue here
               },
             ),
@@ -143,7 +139,6 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.info),
               title: Text('About Us'),
               onTap: () {
-                Navigator.pop(context);
                 // Add code to navigate to the "About Us" screen here
               },
             ),
@@ -155,7 +150,6 @@ class _HomePageState extends State<HomePage> {
                 onChanged: (value) {
                   // Toggle the theme when the switch is changed
                   ThemeMode newThemeMode = value ? ThemeMode.dark : ThemeMode.light;
-                  Navigator.pop(context);
                   HomeScreen.setThemeMode(newThemeMode);
                 },
               ),
@@ -228,7 +222,7 @@ class TopBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 140,
+      height: 150,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
       decoration: BoxDecoration(
@@ -248,25 +242,54 @@ class TopBox extends StatelessWidget {
         ],
       ),
       child: Stack(
-        alignment: Alignment.topRight,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.end, // Adjusted this line
             children: [
-              Text(
-                'Room Number: 101',
-                style: TextStyle(color: Colors.white),
+              Row(
+                children: [
+                  Icon(
+                    Icons.room,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  SizedBox(width: 15),
+                  Text(
+                    'Room No: 101',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
-              Text(
-                'Check-out Date: August 25, 2023',
-                style: TextStyle(color: Colors.white),
+              SizedBox(height: 4), // Increased the gap here
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  SizedBox(width: 15),
+                  Text(
+                    'Check-out: August 25, 2023',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+               Row(
+                children: [
+                  SizedBox(width: 15),
+                  Text(
+                    '',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
             ],
           ),
           Positioned(
-            top: 0,
-            right: 0,
+            top: 10,
+            right: 20,
             child: Text(
               'Hello, User',
               style: TextStyle(
@@ -283,14 +306,25 @@ class TopBox extends StatelessWidget {
 }
 
 
+
+
 class MyImageCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CarouselSlider(
       items: [
-        Image.asset('assets/Rectangle5.png'),
-        Image.asset('assets/pexels-pixabay-50987.jpg'),
-        Image.asset('assets/pexels-spencer-davis-4393021.jpg'),
+        Image.asset(
+          'assets/Rectangle5.png',
+          fit: BoxFit.cover, // Adjust the BoxFit property here
+        ),
+        Image.asset(
+          'assets/pexels-pixabay-50987.jpg',
+          fit: BoxFit.cover, // Adjust the BoxFit property here
+        ),
+        Image.asset(
+          'assets/pexels-spencer-davis-4393021.jpg',
+          fit: BoxFit.cover, // Adjust the BoxFit property here
+        ),
       ],
       options: CarouselOptions(
         height: 220,
@@ -302,6 +336,7 @@ class MyImageCarousel extends StatelessWidget {
     );
   }
 }
+
 
 
 class HomePageContent extends StatelessWidget {

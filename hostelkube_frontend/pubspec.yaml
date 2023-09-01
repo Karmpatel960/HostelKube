@@ -17,6 +17,7 @@ dependencies:
   carousel_slider: ^4.0.0
   flutter_native_splash: ^2.2.18
   google_fonts: ^2.1.0
+  http: ^0.13.3
 
 dev_dependencies:
   flutter_test:
@@ -44,6 +45,7 @@ flutter:
     - assets/Image1.png
     - assets/Image6.png
     - assets/signin/signin_balls.png
+    - assets/background.png
 
   # fonts:
     # Add your custom fonts if needed

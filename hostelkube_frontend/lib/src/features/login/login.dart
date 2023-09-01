@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:hostelkube_frontend/src/features/Signup/signup.dart';
+import 'package:hostelkube_frontend/src/features/features.dart';
 import '/src/router/router.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -27,11 +30,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         child: Column(
           children: [
+            // Image Carousel at the top
+            ImageCarousel(),
+
             Expanded(
               child: Padding(
-                padding: EdgeInsets.all(20),
+                padding: EdgeInsets.all(10),
                 child: Center(
-                  // Your image slider code here
+                  // Your main content here
                 ),
               ),
             ),
@@ -62,7 +68,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.of(context).pushReplacementNamed(Routes.signInRoute);
+                            Navigator.of(context).push(
+                             MaterialPageRoute(
+                                    builder: (context) => SignInScreen(), // Replace with your LoginScreen widget
+                                                        ),
+                                    );
                           },
                           style: ElevatedButton.styleFrom(
                             primary: Colors.black,
@@ -75,7 +85,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.of(context).pushReplacementNamed(Routes.signUpRoute);
+                            Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SignUpPage(), // Replace with your LoginScreen widget
+      ),
+    );
                           },
                           style: ElevatedButton.styleFrom(
                             primary: Colors.black,
@@ -98,3 +112,35 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+class ImageCarousel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 280, // Set a fixed height for the carousel
+      child: CarouselSlider(
+        items: [
+          _buildRoundedImage('assets/Rectangle5.png'),
+          _buildRoundedImage('assets/pexels-pixabay-50987.jpg'),
+          _buildRoundedImage('assets/pexels-spencer-davis-4393021.jpg'),
+        ],
+        options: CarouselOptions(
+          viewportFraction: 1.0, // Make each item take the full width
+          aspectRatio: 16 / 9,
+          enlargeCenterPage: true,
+          autoPlay: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoundedImage(String imagePath) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12), // Adjust the radius as needed
+      child: Image.asset(imagePath, fit: BoxFit.cover),
+    );
+  }
+}
+
+

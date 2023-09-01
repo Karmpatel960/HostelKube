@@ -1,52 +1,153 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:hostelkube_frontend/src/features/features.dart';
 import '/src/router/router.dart';
+
 
 class SignInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    return MaterialApp(
+      home: SignInPage(),
+      theme: ThemeData(
+        primaryColor: Colors.blue, // Change the primary color
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.blue, // Change the primary color
+        ),
+      ),
+    );
+  }
+}
+
+class SignInPage extends StatelessWidget {
+  String selectedRole = 'User';
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Sign In"),
+  title: Center(
+    child: Text(
+      'Sign In',
+      style: TextStyle(
+        color: Colors.black, // Text color
       ),
+    ),
+  ),
+  backgroundColor: Colors.white, // Set the background color of the AppBar to white
+),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomLeft,
-            end: Alignment.topRight,
-            stops: [0.1, 0.4, 0.6, 0.9],
-            colors: [
-              Color(0xff9f56fc),
-              Color(0xffff26a7),
-              Color(0xffff9a7a),
-              Color(0xffe2d66e),
-            ],
-          ),
-        ),
+      decoration: BoxDecoration(
+  color: Colors.white, // Set the background color to white
+),
+
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "Sign In Page",
-                style: GoogleFonts.sora(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+              Icon(
+                Icons.account_circle,
+                size: 100.0,
+                color: Colors.black,
+              ),
+              SizedBox(height: 16.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: TextField(
+                  style: TextStyle(color: Colors.black), // Change text color to black
+                  decoration: InputDecoration(
+                    labelText: 'Email or Username',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
                 ),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacementNamed(Routes.homeRoute);
-                },
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.black,
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              SizedBox(height: 16.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: TextField(
+                  style: TextStyle(color: Colors.black), // Change text color to black
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
                 ),
+              ),
+              SizedBox(height: 16.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: DropdownButtonFormField<String>(
+                  value: selectedRole,
+                  items: ['User', 'Admin']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value, style: TextStyle(color: Colors.black)), // Change text color to black
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    selectedRole = newValue!;
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Role',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.0),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.orange,
+                  onPrimary: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                onPressed: () {
+                  // Add sign-in logic here
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text('Sign In', style: TextStyle(fontSize: 16.0)),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                   Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PasswordPage(), // Replace with your LoginScreen widget
+      ),
+    );
+                  // Add navigation to the forgot password page
+                },
                 child: Text(
-                  "Go to Home",
-                  style: TextStyle(fontSize: 18),
+                  'Forgot Password?',
+                  style: TextStyle(color: Colors.black), // Change text color to black
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                   Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SignUpPage(), // Replace with your LoginScreen widget
+      ),
+    );
+                  // Add navigation to the registration page
+                },
+                child: Text(
+                  "Don't have an account? Sign Up",
+                  style: TextStyle(color: Colors.black), // Change text color to black
                 ),
               ),
             ],
