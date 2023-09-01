@@ -6,7 +6,7 @@ class Routes {
   static const String adminRoute = '/admin';
   static const String loginRoute = '/login';
   static const String signUpRoute = '/signup';
-  static const String signInRoute = '/signin'; // New route for sign-up
+  static const String signInRoute = '/signin';
   static const String SplashRoute = '/splash';
 
   static bool _isFirstTime = true;
@@ -30,7 +30,7 @@ class Routes {
       case signUpRoute: // Route for sign-up
         return MaterialPageRoute(builder: (_) => SignUpScreen());
 
-      case signInRoute: // Route for sign-up
+      case signInRoute: 
         return MaterialPageRoute(builder: (_) => SignInScreen());
 
       default:

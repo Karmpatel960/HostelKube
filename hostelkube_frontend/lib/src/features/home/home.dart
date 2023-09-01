@@ -1,32 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import '/src/router/router.dart';
+
+import 'transactions/transactions.dart';
+import 'profile/profile.dart';
+import 'foodmenu/foodmenu.dart';
 
 
 class HomeScreen extends StatelessWidget {
+  final ThemeMode themeMode;
+
+  const HomeScreen({Key? key, this.themeMode = ThemeMode.light}) : super(key: key);
+
+  static void setThemeMode(ThemeMode themeMode) {
+    runApp(HomeScreen(themeMode: themeMode));
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'HostelKube',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Poppins',
-      ),
+      title: ' Prince Hostel',
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: themeMode,
       home: HomePage(),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+
+  int _currentIndex = 0; // Define _currentIndex as an instance variable
+
+  final List<Widget> _pages = [
+    HomePageContent(),
+    ReceiptScreen(),
+    FoodmenuScreen(),
+    ProfileScreen(),
+  ];
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
-          'Hostel Management System',
+          'Prince Hostel',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -44,6 +70,11 @@ class HomePage extends StatelessWidget {
           },
         ),
       ),
+      body: IndexedStack(
+  index: _currentIndex,
+  children: _pages,
+),
+
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -51,185 +82,123 @@ class HomePage extends StatelessWidget {
             DrawerHeader(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF204E5E), Color(0xFF407F8C)],
+                  colors: [
+                    Color.fromRGBO(0, 0, 255, 1.0),
+                    Color.fromRGBO(0, 0, 255, 1.0),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: Text(
-                'Features',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.calendar_today),
-              title: Text('Calendar'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TopBox(),
-            SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                'Daily Services',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    // Handle the button tap for Room Service
-                    // Add your code here
-                  },
-                  child: ServiceContainer(
-                    iconData: Icons.room_service,
-                    imageAsset: 'assets/Image2.png',
+              child: Column(
+                children: [
+                  Image.asset(
+                    'assets/lmage11.png', // Replace with the path to your logo image
+                    height: 80, // Adjust the height as needed
                   ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Handle the button tap for Restaurant Menu
-                    // Add your code here
-                  },
-                  child: ServiceContainer(
-                    iconData: Icons.restaurant_menu,
-                    imageAsset: 'assets/Image3.png',
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                  Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
-                  },
-                  child: ServiceContainer(
-                    iconData: Icons.local_laundry_service,
-                    imageAsset: 'assets/Image4.png',
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    // Handle the button tap for Local Offer
-                    // Add your code here
-                  },
-                  child: ServiceContainer(
-                    iconData: Icons.local_offer,
-                    imageAsset: 'assets/Image5.png',
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Handle the button tap for Local Parking
-                    // Add your code here
-                  },
-                  child: ServiceContainer(
-                    iconData: Icons.local_parking,
-                    imageAsset: 'assets/Image7.png',
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Handle the button tap for Pool
-                    // Add your code here
-                  },
-                  child: ServiceContainer(
-                    iconData: Icons.pool,
-                    imageAsset: 'assets/Image10.png',
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                'Hostel Services',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-            ),
-            SizedBox(height: 20),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 20),
-              height: 220,
-              decoration: BoxDecoration(
-                color: Color(0xFF0085FF),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 12.0,
-                    spreadRadius: 3.0,
-                    offset: Offset(0, 6),
+                  SizedBox(height: 10),
+                  Text(
+                    'Features',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
                   ),
                 ],
               ),
-              child: MyImageCarousel(),
+            ),
+            ListTile(
+              leading: Icon(Icons.attach_money),
+              title: Text('Fee Payment'),
+              onTap: () {
+                Navigator.pop(context);
+                // Add code to handle fee payment here
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.lightbulb_outline),
+              title: Text('Light Bill Payment'),
+              onTap: () {
+                Navigator.pop(context);
+                // Add code to handle light bill payment here
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.receipt),
+              title: Text('Bill Receipt'),
+              onTap: () {
+                Navigator.pop(context);
+                // Add code to handle bill receipt here
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.error),
+              title: Text('Any Issue'),
+              onTap: () {
+                Navigator.pop(context);
+                // Add code to handle any issue here
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.info),
+              title: Text('About Us'),
+              onTap: () {
+                Navigator.pop(context);
+                // Add code to navigate to the "About Us" screen here
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.brightness_6), // Icon for theme change
+              title: Text('Dark Theme'), // Theme change option
+              trailing: Switch(
+                value: Theme.of(context).brightness == Brightness.dark,
+                onChanged: (value) {
+                  // Toggle the theme when the switch is changed
+                  ThemeMode newThemeMode = value ? ThemeMode.dark : ThemeMode.light;
+                  Navigator.pop(context);
+                  HomeScreen.setThemeMode(newThemeMode);
+                },
+              ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        child: Container(
-          height: 60.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                icon: Icon(Icons.home),
-                onPressed: () {
-                   Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.attach_money),
-                onPressed: () {
-                   Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
-                },
-              ),
-              SizedBox(width: 40),
-              IconButton(
-                icon: Icon(Icons.menu),
-                onPressed: () {
-                   Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.person),
-                onPressed: () {
-                   Navigator.of(context).pushReplacementNamed(Routes.loginRoute);
-                },
-              ),
-            ],
-          ),
-        ),
+    
+    bottomNavigationBar: BottomNavigationBar(
+    type: BottomNavigationBarType.fixed,
+    backgroundColor: Theme.of(context).bottomAppBarColor,
+    selectedItemColor: Color.fromARGB(255, 51, 163, 255),
+    unselectedItemColor: Theme.of(context).brightness == Brightness.dark
+  ? Colors.white // Set to white when the theme is dark (black)
+  : Colors.black, // Set to black when the theme is light (white)
+    selectedFontSize: 12,
+    unselectedFontSize: 9,
+
+    currentIndex: _currentIndex,
+    onTap: (index) {
+      setState(() {
+        _currentIndex = index;
+      });
+    },
+    items: [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.home),
+        label: 'Home',
       ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.receipt_long),
+        label: 'Receipt',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.food_bank),
+        label: 'Food',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.person),
+        label: 'Profile',
+      ),
+    ],
+  ),
     );
   }
 
@@ -264,7 +233,7 @@ class TopBox extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF204E5E), Color(0xFF407F8C)],
+          colors: [Color.fromRGBO(0, 133, 255, 1.0), Color.fromRGBO(0, 133, 255, 1.0)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -313,25 +282,196 @@ class TopBox extends StatelessWidget {
   }
 }
 
-class ServiceContainer extends StatelessWidget {
-  final IconData iconData;
-  final String imageAsset;
 
-  ServiceContainer({required this.iconData, required this.imageAsset});
+class MyImageCarousel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CarouselSlider(
+      items: [
+        Image.asset('assets/Rectangle5.png'),
+        Image.asset('assets/pexels-pixabay-50987.jpg'),
+        Image.asset('assets/pexels-spencer-davis-4393021.jpg'),
+      ],
+      options: CarouselOptions(
+        height: 220,
+        viewportFraction: 0.9,
+        aspectRatio: 16 / 9,
+        enlargeCenterPage: true,
+        autoPlay: true,
+      ),
+    );
+  }
+}
+
+
+class HomePageContent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TopBox(),
+          SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Daily Services',
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Flexible(
+                flex: 1,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle the button tap for Room Service
+                  },
+                  child: ServiceContainer(
+                     imageAsset: 'assets/Image1.png',
+                     serviceName: 'Fee Payment',
+                  ),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle the button tap for Restaurant Menu
+                  },
+                  child: ServiceContainer(
+                     imageAsset: 'assets/Image2.png',
+  serviceName: 'Pay Light Bill',
+                  ),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle the button tap for Local Laundry Service
+                  },
+                  child: ServiceContainer(
+                     imageAsset: 'assets/Image3.png',
+  serviceName: 'Daily Menu',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Flexible(
+                flex: 1,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle the button tap for Local Offer
+                  },
+                  child: ServiceContainer(
+                     imageAsset: 'assets/Image5.png',
+                     serviceName: 'Print Receipt',
+                  ),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle the button tap for Local Parking
+                  },
+                  child: ServiceContainer(
+                     imageAsset: 'assets/Image6.png',
+  serviceName: 'Print Light Bill',
+                  ),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle the button tap for Pool
+                  },
+                  child: ServiceContainer(
+                     imageAsset: 'assets/Image4.png',
+  serviceName: 'Add Issues',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Hostel Services',
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(height: 20),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 20),
+            height: 220,
+            decoration: BoxDecoration(
+              color: Color(0xFF0085FF),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 12.0,
+                  spreadRadius: 3.0,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: MyImageCarousel(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ServiceContainer extends StatelessWidget {
+  final String imageAsset;
+  final IconData? iconData;
+  final String serviceName;
+
+  ServiceContainer({
+    required this.imageAsset,
+    this.iconData,
+    required this.serviceName,
+  });
 
   @override
   Widget build(BuildContext context) {
+
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+  final borderColor = isDarkTheme ? Colors.white : Colors.black;
+  final boxColor = isDarkTheme ? Colors.black : Colors.white;
+
     return Container(
-      width: 100,
-      height: 100,
+      width: 80,
+      height: 80,
       margin: EdgeInsets.all(8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF305F72), Color(0xFF609DAB)],
+          colors: [
+            Color.fromRGBO(71, 221, 254, 1.0),
+            Color.fromRGBO(71, 221, 254, 1.0),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+        color: borderColor, // Border color based on the theme
+        width: 2, // Border width
+      ),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -345,40 +485,22 @@ class ServiceContainer extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              iconData,
-              color: Colors.white,
-              size: 36,
-            ),
-            SizedBox(height: 10),
             Image.asset(
               imageAsset,
-              height: 40,
-              width: 40,
+              height: 30, // Adjust the size as needed
+              width: 30, // Adjust the size as needed
+            ),
+            SizedBox(height: 5),
+            Text(
+              serviceName,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class MyImageCarousel extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return CarouselSlider(
-      items: [
-        Image.asset('assets/Rectangle5.png'),
-        Image.asset('assets/pexels-cottonbro-studio-5137969.jpg'),
-        Image.asset('assets/pexels-pixabay-50987.jpg'),
-        Image.asset('assets/pexels-spencer-davis-4393021.jpg'),
-      ],
-      options: CarouselOptions(
-        height: 220,
-        viewportFraction: 0.9,
-        aspectRatio: 16 / 9,
-        enlargeCenterPage: true,
-        autoPlay: true,
       ),
     );
   }
