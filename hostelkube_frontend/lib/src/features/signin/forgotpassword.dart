@@ -78,7 +78,7 @@ class ForgotPasswordPage extends StatelessWidget {
                   // Add navigation to the login page
                    Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => SignInScreen(), // Replace with your LoginScreen widget
+        builder: (context) => SignInPage(), // Replace with your LoginScreen widget
       ),
     );
                 },

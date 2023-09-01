@@ -4,6 +4,8 @@ const mailgen = require("mailgen");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
+
+
 let transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -23,7 +25,6 @@ const mailGenerator = new mailgen({
     logo: "https://img.freepik.com/free-vector/editable-hotel-logo-vector-business-corporate-identity-hostel_53876-111553.jpg?w=740&t=st=1693473769~exp=1693474369~hmac=add6d6dc14d02bbec0acdc87e71df9b2fc49da302c380c56edeebe3",
   },
 });
-
 
 
 
@@ -60,22 +61,128 @@ exports.userregister = async (req, res) => {
 
 
 
-exports.userOtpSend = async (req, res) => {
-  const { email } = req.body;
+// exports.userOtpSend = async (req, res) => {
+//   const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ error: "Please Enter Your Email" });
+//   if (!email) {
+//     return res.status(400).json({ error: "Please Enter Your Email" });
+//   }
+
+//   try {
+//     const user = await users.findOne({ email: email });
+
+//     if (!user) {
+//       return res
+//         .status(400)
+//         .json({ error: "This User Does Not Exist In our DataBase" });
+//     }
+
+//     const OTP = Math.floor(100000 + Math.random() * 900000);
+
+//     const existEmail = await userotp.findOne({ email: email });
+
+//     if (existEmail) {
+//       existEmail.otp = OTP;
+//       await existEmail.save();
+//     } else {
+//       const saveOtpData = new userotp({
+//         email,
+//         otp: OTP,
+//       });
+//       await saveOtpData.save();
+//     }
+
+//     const emailTemplate = {
+//       body: {
+//         name: user.name,
+//         intro: `Your OTP for verification is: ${OTP}`,
+//         outro: "If you didn't request this OTP, please ignore this email.",
+//       },
+//     };
+
+//     const emailText = mailGenerator.generatePlaintext(emailTemplate);
+//     const emailHtml = mailGenerator.generate(emailTemplate);
+
+//     const mailOptions = {
+//       from: process.env.EMAIL,
+//       to: email,
+//       subject: "OTP Verification",
+//       text: emailText,
+//       html: emailHtml,
+//     };
+
+//     transporter.sendMail(mailOptions, (error, info) => {
+//       if (error) {
+//         console.error(error);
+//         res
+//           .status(400)
+//           .json({ error: "Email not sent", details: error.message });
+//       } else {
+//         console.log("Email sent", info.response);
+//         res.status(200).json({ message: "Email sent Successfully" });
+//       }
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res
+//       .status(400)
+//       .json({ error: "An error occurred", details: error.message });
+//   }
+// };
+
+// exports.userLogin = async (req, res) => {
+//   const { email, password,role } = req.body; // Include `otp` in the request body
+
+//   if (!email || !otp || !role) {
+//     // Check for both email and otp
+//     res.status(400).json({ error: "Please Enter Your OTP and email" });
+//     return; // Return to prevent further execution
+//   }
+
+//   try {
+//     const otpverification = await userotp.findOne({ email: email });
+
+//     if (otpverification && otpverification.otp === otp) {
+//       // Check if otpverification exists and otp matches
+//       const preuser = await users.findOne({ email: email });
+
+//       if (!preuser) {
+//         res.status(400).json({ error: "User not found" });
+//         return; // Return to prevent further execution
+//       }
+
+//       // token generate
+//       const token = await preuser.generateAuthtoken();
+//       res
+//         .status(200)
+//         .json({ message: "User Login Successfully Done", userToken: token });
+//     } else {
+//       console.log("Invalid otp ");
+//       res.status(400).json({ error: "Invalid Otp" });
+//     }
+//   } catch (error) {
+//     res.status(400).json({ error: "Invalid Details", error });
+//   }
+// };
+
+exports.userLogin= async (req, res) => {
+  const { email, password, role } = req.body;
+
+  if (!email || !password || !role) {
+    res.status(400).json({ error: "Please Enter Your Email, Password, and Role" });
+    return;
   }
 
   try {
-    const user = await users.findOne({ email: email });
+    const user = await users.findOne({ email: email});
+
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ error: "This User Does Not Exist In our DataBase" });
+      res.status(400).json({ error: "Invalid Credentials" });
+      return;
     }
 
+    // Generate and send OTP
     const OTP = Math.floor(100000 + Math.random() * 900000);
 
     const existEmail = await userotp.findOne({ email: email });
@@ -113,9 +220,7 @@ exports.userOtpSend = async (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error(error);
-        res
-          .status(400)
-          .json({ error: "Email not sent", details: error.message });
+        res.status(400).json({ error: "Email not sent", details: error.message });
       } else {
         console.log("Email sent", info.response);
         res.status(200).json({ message: "Email sent Successfully" });
@@ -123,19 +228,16 @@ exports.userOtpSend = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(400)
-      .json({ error: "An error occurred", details: error.message });
+    res.status(400).json({ error: "Invalid Details", error });
   }
 };
 
-exports.userLogin = async (req, res) => {
-  const { email, otp } = req.body; // Include `otp` in the request body
+exports.otpVerification = async (req, res) => {
+  const { email, otp } = req.body;
 
   if (!email || !otp) {
-    // Check for both email and otp
-    res.status(400).json({ error: "Please Enter Your OTP and email" });
-    return; // Return to prevent further execution
+    res.status(400).json({ error: "Please Enter Your Email and OTP" });
+    return;
   }
 
   try {
@@ -147,17 +249,16 @@ exports.userLogin = async (req, res) => {
 
       if (!preuser) {
         res.status(400).json({ error: "User not found" });
-        return; // Return to prevent further execution
+        return;
       }
 
-      // token generate
-      const token = await preuser.generateAuthtoken();
-      res
-        .status(200)
-        .json({ message: "User Login Successfully Done", userToken: token });
+      // Token generation logic if needed
+      // const token = await preuser.generateAuthtoken();
+
+      res.status(200).json({ message: "OTP Verification Successful" });
     } else {
-      console.log("Invalid otp ");
-      res.status(400).json({ error: "Invalid Otp" });
+      console.log("Invalid OTP");
+      res.status(400).json({ error: "Invalid OTP" });
     }
   } catch (error) {
     res.status(400).json({ error: "Invalid Details", error });

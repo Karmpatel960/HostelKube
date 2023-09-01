@@ -9,6 +9,7 @@ class Routes {
   static const String signInRoute = '/signin';
   static const String SplashRoute = '/splash';
   static const String welcomeRoute = '/welcome';
+  // static const String otpRoute = '/otp';
 
   static bool _isFirstTime = true;
 
@@ -32,7 +33,10 @@ class Routes {
         return MaterialPageRoute(builder: (_) => SignUpPage());
 
       case signInRoute: 
-        return MaterialPageRoute(builder: (_) => SignInScreen());
+        return MaterialPageRoute(builder: (_) => SignInPage());
+
+      // case otpRoute: 
+      //   return MaterialPageRoute(builder: (_) => OTPVerificationPage());
 
       case welcomeRoute:
         return MaterialPageRoute(builder: (_) => Welcome());

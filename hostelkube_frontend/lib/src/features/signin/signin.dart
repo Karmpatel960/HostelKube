@@ -1,45 +1,81 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:hostelkube_frontend/src/features/features.dart';
-import '/src/router/router.dart';
 
-
-class SignInScreen extends StatelessWidget {
+class SignInPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SignInPage(),
-      theme: ThemeData(
-        primaryColor: Colors.blue, // Change the primary color
-        colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: Colors.blue, // Change the primary color
-        ),
+  _SignInPageState createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  String selectedRole = 'user';
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  TextEditingController emailOrUsernameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: 2),
       ),
     );
   }
+
+ void _signIn() async {
+  final apiUrl = Uri.parse("http://localhost:3000/user/login"); // Replace with your API URL
+
+  try {
+    final response = await http.post(
+      apiUrl,
+      body: {
+        "email": emailOrUsernameController.text,
+        "password": passwordController.text,
+        "role": selectedRole,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => OTPVerificationPage(
+            email: emailOrUsernameController.text, // Pass the email
+          ),
+        ),
+      );
+    } else {
+      // Sign-in failed, show an error message
+      _showSnackBar('Sign-in failed');
+    }
+  } catch (error) {
+    // Handle network or other errors
+    print(error);
+    _showSnackBar('Error occurred during sign-in');
+  }
 }
 
-class SignInPage extends StatelessWidget {
-  String selectedRole = 'User';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey, // Add the key to the Scaffold
       appBar: AppBar(
-  title: Center(
-    child: Text(
-      'Sign In',
-      style: TextStyle(
-        color: Colors.black, // Text color
+        title: Center(
+          child: Text(
+            'Sign In',
+            style: TextStyle(
+              color: Colors.black, // Text color
+            ),
+          ),
+        ),
+        backgroundColor: Colors.white, // Set the background color of the AppBar to white
       ),
-    ),
-  ),
-  backgroundColor: Colors.white, // Set the background color of the AppBar to white
-),
       body: Container(
-      decoration: BoxDecoration(
-  color: Colors.white, // Set the background color to white
-),
-
+        decoration: BoxDecoration(
+          color: Colors.white, // Set the background color to white
+        ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -53,6 +89,7 @@ class SignInPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: TextField(
+                  controller: emailOrUsernameController,
                   style: TextStyle(color: Colors.black), // Change text color to black
                   decoration: InputDecoration(
                     labelText: 'Email or Username',
@@ -68,6 +105,7 @@ class SignInPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: TextField(
+                  controller: passwordController,
                   style: TextStyle(color: Colors.black), // Change text color to black
                   obscureText: true,
                   decoration: InputDecoration(
@@ -85,7 +123,7 @@ class SignInPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: DropdownButtonFormField<String>(
                   value: selectedRole,
-                  items: ['User', 'Admin']
+                  items: ['user', 'admin','employee']
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -93,7 +131,9 @@ class SignInPage extends StatelessWidget {
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
-                    selectedRole = newValue!;
+                    setState(() {
+                      selectedRole = newValue!;
+                    });
                   },
                   decoration: InputDecoration(
                     labelText: 'Role',
@@ -114,8 +154,15 @@ class SignInPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
-                onPressed: () {
-                  // Add sign-in logic here
+                // onPressed: _signIn,
+
+                   onPressed: () {
+                  // Add navigation to the forgot password page
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(), // Replace with your SignUpPage widget
+                    ),
+                  );
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -124,12 +171,12 @@ class SignInPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                   Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PasswordPage(), // Replace with your LoginScreen widget
-      ),
-    );
                   // Add navigation to the forgot password page
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PasswordPage(), // Replace with your SignUpPage widget
+                    ),
+                  );
                 },
                 child: Text(
                   'Forgot Password?',
@@ -138,12 +185,12 @@ class SignInPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                   Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => SignUpPage(), // Replace with your LoginScreen widget
-      ),
-    );
                   // Add navigation to the registration page
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => SignUpPage(), // Replace with your SignUpPage widget
+                    ),
+                  );
                 },
                 child: Text(
                   "Don't have an account? Sign Up",
@@ -157,3 +204,4 @@ class SignInPage extends StatelessWidget {
     );
   }
 }
+
