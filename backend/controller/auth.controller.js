@@ -60,111 +60,6 @@ exports.userregister = async (req, res) => {
 };
 
 
-
-// exports.userOtpSend = async (req, res) => {
-//   const { email } = req.body;
-
-//   if (!email) {
-//     return res.status(400).json({ error: "Please Enter Your Email" });
-//   }
-
-//   try {
-//     const user = await users.findOne({ email: email });
-
-//     if (!user) {
-//       return res
-//         .status(400)
-//         .json({ error: "This User Does Not Exist In our DataBase" });
-//     }
-
-//     const OTP = Math.floor(100000 + Math.random() * 900000);
-
-//     const existEmail = await userotp.findOne({ email: email });
-
-//     if (existEmail) {
-//       existEmail.otp = OTP;
-//       await existEmail.save();
-//     } else {
-//       const saveOtpData = new userotp({
-//         email,
-//         otp: OTP,
-//       });
-//       await saveOtpData.save();
-//     }
-
-//     const emailTemplate = {
-//       body: {
-//         name: user.name,
-//         intro: `Your OTP for verification is: ${OTP}`,
-//         outro: "If you didn't request this OTP, please ignore this email.",
-//       },
-//     };
-
-//     const emailText = mailGenerator.generatePlaintext(emailTemplate);
-//     const emailHtml = mailGenerator.generate(emailTemplate);
-
-//     const mailOptions = {
-//       from: process.env.EMAIL,
-//       to: email,
-//       subject: "OTP Verification",
-//       text: emailText,
-//       html: emailHtml,
-//     };
-
-//     transporter.sendMail(mailOptions, (error, info) => {
-//       if (error) {
-//         console.error(error);
-//         res
-//           .status(400)
-//           .json({ error: "Email not sent", details: error.message });
-//       } else {
-//         console.log("Email sent", info.response);
-//         res.status(200).json({ message: "Email sent Successfully" });
-//       }
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res
-//       .status(400)
-//       .json({ error: "An error occurred", details: error.message });
-//   }
-// };
-
-// exports.userLogin = async (req, res) => {
-//   const { email, password,role } = req.body; // Include `otp` in the request body
-
-//   if (!email || !otp || !role) {
-//     // Check for both email and otp
-//     res.status(400).json({ error: "Please Enter Your OTP and email" });
-//     return; // Return to prevent further execution
-//   }
-
-//   try {
-//     const otpverification = await userotp.findOne({ email: email });
-
-//     if (otpverification && otpverification.otp === otp) {
-//       // Check if otpverification exists and otp matches
-//       const preuser = await users.findOne({ email: email });
-
-//       if (!preuser) {
-//         res.status(400).json({ error: "User not found" });
-//         return; // Return to prevent further execution
-//       }
-
-//       // token generate
-//       const token = await preuser.generateAuthtoken();
-//       res
-//         .status(200)
-//         .json({ message: "User Login Successfully Done", userToken: token });
-//     } else {
-//       console.log("Invalid otp ");
-//       res.status(400).json({ error: "Invalid Otp" });
-//     }
-//   } catch (error) {
-//     res.status(400).json({ error: "Invalid Details", error });
-//   }
-// };
-
 exports.userLogin= async (req, res) => {
   const { email, password, role } = req.body;
 
@@ -182,7 +77,6 @@ exports.userLogin= async (req, res) => {
       return;
     }
 
-    // Generate and send OTP
     const OTP = Math.floor(100000 + Math.random() * 900000);
 
     const existEmail = await userotp.findOne({ email: email });
