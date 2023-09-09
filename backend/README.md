@@ -29,3 +29,27 @@ Start the Node.js application:
 
 npm start
 The application should now be running locally on http://localhost:3000.
+
+
+## Usage
+
+### API Endpoints
+
+#### User Registration
+To register a new user, use the following API endpoint:
+
+- **Endpoint**: `http://localhost:3000/user/register`
+- **Method**: `POST`
+- **Description**: Register a new user with the provided information.
+- **Request Body**: Include user registration data (e.g., username, email, password) in the request body.
+
+Example using `curl`:
+
+```bash
+curl -X POST http://localhost:3000/user/register \
+     -H "Content-Type: application/json" \
+     -d '{
+       "username": "your_username",
+       "email": "your_email@example.com",
+       "password": "your_password"
+     }'
