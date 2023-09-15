@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const notificationSchema = new mongoose.Schema({
-  recipientId: String, // Student or Administrator ID
+  recipientId: String, 
   content: String,
   date: Date,
 });

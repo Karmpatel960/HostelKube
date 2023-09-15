@@ -46,6 +46,15 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+  roomNumber: String,
+  accessGranted: {
+    type: Boolean,
+    default: false,
+  },
+  grantedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+  },
 });
 
 // hash password
