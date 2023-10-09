@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -7,29 +9,39 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String userName = ''; // Initialize with empty string
-  String roomNumber = '';
-  String phoneNumber = '';
-  // Add more variables for other profile details as needed
 
   @override
   void initState() {
     super.initState();
-    // Fetch profile data from the backend here and update the state variables
-    fetchDataFromBackend();
+    // Fetch and set the user's data from Firestore
+    fetchUserDataFromFirestore();
   }
 
-  void fetchDataFromBackend() {
-    // Simulate fetching data from the backend (replace with your actual data fetching logic)
-    Future.delayed(Duration(seconds: 2), () {
-      setState(() {
-        // Update the state variables with fetched data
-        userName = 'John Doe'; // Replace with fetched data
-        roomNumber = '101'; // Replace with fetched data
-        phoneNumber = '+1234567890'; // Replace with fetched data
-        // Update other profile details as needed
-      });
-    });
+Future<void> fetchUserDataFromFirestore() async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final uid = user.uid;
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final fetchedName = userData['name'];
+        print('Fetched Name: $fetchedName'); // Add this line for debugging
+        setState(() {
+          userName = fetchedName ?? ''; // Update userName
+        });
+      } else {
+        print('User document does not exist');
+      }
+    } else {
+      print('User is not signed in');
+    }
+  } catch (error) {
+    print('Error fetching user data: $error');
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -43,28 +55,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SizedBox(height: 20),
           CircleAvatar(
             radius: 60,
-            backgroundImage: AssetImage('assets/profile_image.jpg'), // Replace with your profile image
+            backgroundImage: AssetImage('assets/profile_image.jpg'),
           ),
           SizedBox(height: 20),
           Text(
             userName,
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 10),
-          Text(
-            'Room: $roomNumber',
-            style: TextStyle(fontSize: 16),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Phone: $phoneNumber',
-            style: TextStyle(fontSize: 16),
-          ),
           // Display other profile details using state variables
         ],
       ),
-  
-
     );
   }
 }

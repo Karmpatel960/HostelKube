@@ -1,52 +1,102 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'transactions/transactions.dart';
 import 'profile/profile.dart';
 import 'foodmenu/foodmenu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hostelkube_frontend/src/features/features.dart';
 
 
 class HomeScreen extends StatelessWidget {
   final ThemeMode themeMode;
+  final String userId; // Add userId here
 
-  const HomeScreen({Key? key, this.themeMode = ThemeMode.light}) : super(key: key);
+  const HomeScreen({Key? key, this.themeMode = ThemeMode.light, required this.userId}) : super(key: key);
 
-  static void setThemeMode(ThemeMode themeMode) {
-    runApp(HomeScreen(themeMode: themeMode));
-  }
+  // Remove the static method setThemeMode
+  //  static void setThemeMode(ThemeMode themeMode) {
+  //   runApp();
+  // }
+
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: ' Prince Hostel',
+      title: 'Prince Hostel',
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: themeMode,
-      home: HomePage(),
+      home: HomePage(userId: userId), // Pass userId here
     );
   }
 }
 
 class HomePage extends StatefulWidget {
+  final String userId; // Add userId here
+
+  HomePage({required this.userId}); 
   @override
-  _HomePageState createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState(userId: userId);
 }
 
 class _HomePageState extends State<HomePage> {
+  final String userId; // Add a userId parameter
+
+  _HomePageState({required this.userId});
+  String userName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserNameFromFirebase();
+  }
+
+  void fetchUserNameFromFirebase() async {
+  // Replace 'userId' with the actual user ID of the logged-in user
+  final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+  final name = await fetchUserName(userId);
+
+  setState(() {
+    userName = name;
+  });
+}
+
+Future<String> fetchUserName(String userId) async {
+  try {
+    final firestore = FirebaseFirestore.instance;
+    final userDoc = await firestore.collection('users').doc(userId).get();
+
+    if (userDoc.exists) {
+      final data = userDoc.data() as Map<String, dynamic>;
+      final name = data['name'] as String;
+
+      return name;
+    } else {
+      return ''; // Return a default value if the user document doesn't exist
+    }
+  } catch (error) {
+    print('Error fetching user name: $error');
+    return ''; // Handle the error and return a default value
+  }
+}
+
 
   int _currentIndex = 0; // Define _currentIndex as an instance variable
 
-  final List<Widget> _pages = [
-    HomePageContent(),
-    ReceiptScreen(),
-    FoodmenuScreen(),
-    ProfileScreen(),
-  ];
+
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _pages = [
+    HomePageContent(userName: userName),
+    TransactionPage(),
+    // FoodmenuScreen(),
+    HostelFeeInfoPage(),
+    ProfileScreen(),
+  ];
     return Scaffold(
       
       key: _scaffoldKey,
@@ -93,7 +143,7 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 children: [
                   Image.asset(
-                    'assets/lmage11.png', // Replace with the path to your logo image
+                    'assets/name.png', // Replace with the path to your logo image
                     height: 80, // Adjust the height as needed
                   ),
                   SizedBox(height: 10),
@@ -109,7 +159,7 @@ class _HomePageState extends State<HomePage> {
             ),
             ListTile(
               leading: Icon(Icons.attach_money),
-              title: Text('Fee Payment'),
+              title: Text('Rooms'),
               onTap: () {
                 // Add code to handle fee payment here
               },
@@ -150,7 +200,7 @@ class _HomePageState extends State<HomePage> {
                 onChanged: (value) {
                   // Toggle the theme when the switch is changed
                   ThemeMode newThemeMode = value ? ThemeMode.dark : ThemeMode.light;
-                  HomeScreen.setThemeMode(newThemeMode);
+                  // HomeScreen.setThemeMode(newThemeMode);
                 },
               ),
             ),
@@ -218,6 +268,11 @@ class _HomePageState extends State<HomePage> {
 }
 
 class TopBox extends StatelessWidget {
+
+  final String userName; // Add this parameter
+
+  TopBox({required this.userName}); // Constructor
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -291,7 +346,7 @@ class TopBox extends StatelessWidget {
             top: 10,
             right: 20,
             child: Text(
-              'Hello, User',
+              'Hello, $userName',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -340,13 +395,16 @@ class MyImageCarousel extends StatelessWidget {
 
 
 class HomePageContent extends StatelessWidget {
+  final String userName; // Add this parameter
+
+  HomePageContent({required this.userName}); // Constructor
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TopBox(),
+          TopBox(userName: userName),
           SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -425,18 +483,24 @@ class HomePageContent extends StatelessWidget {
                   ),
                 ),
               ),
-              Flexible(
-                flex: 1,
-                child: GestureDetector(
-                  onTap: () {
-                    // Handle the button tap for Pool
-                  },
-                  child: ServiceContainer(
-                     imageAsset: 'assets/Image4.png',
-  serviceName: 'Add Issues',
-                  ),
-                ),
-              ),
+             Flexible(
+  flex: 1,
+  child: GestureDetector(
+    onTap: () {
+      // Navigate to the AdminPage when the button is tapped
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => AdminScreen(),
+        ),
+      );
+    },
+    child: ServiceContainer(
+      imageAsset: 'assets/Image4.png',
+      serviceName: 'Add Issues',
+    ),
+  ),
+),
+
             ],
           ),
           SizedBox(height: 40),

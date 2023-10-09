@@ -1,197 +1,61 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
-class OTPVerificationPage extends StatefulWidget {
-  final String email;
-
-  OTPVerificationPage({required this.email});
-
-  @override
-  _OTPVerificationPageState createState() => _OTPVerificationPageState();
-}
-
-class _OTPVerificationPageState extends State<OTPVerificationPage> {
-  final TextEditingController otpController = TextEditingController();
-  bool isLoading = false; // Added to show loading indicator
-
-  Future<void> verifyOTP() async {
-    final String enteredOTP = otpController.text;
-    final String apiUrl = 'http://localhost:3000/user/sendotp'; // Replace with your API URL
-
-    final Map<String, dynamic> requestBody = {
-      'email': widget.email,
-      'otp': enteredOTP,
-    };
-
-    try {
-      setState(() {
-        isLoading = true; // Show loading indicator
-      });
-
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: requestBody,
-      );
-
-      if (response.statusCode == 200) {
-        // OTP verification successful, navigate to the success page
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SuccessPage(),
-          ),
-        );
-      } else {
-        // Handle errors here
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Invalid OTP. Please try again.',
-              style: TextStyle(
-                fontSize: 18,
-              ),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    } catch (error) {
-      // Handle network or other errors here
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Error: $error',
-            style: TextStyle(
-              fontSize: 18,
-            ),
-          ),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    } finally {
-      setState(() {
-        isLoading = false; // Hide loading indicator
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('OTP Verification'),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Enter the OTP sent to ${widget.email}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              SizedBox(height: 30),
-              TextFormField(
-                controller: otpController,
-                keyboardType: TextInputType.number,
-                style: TextStyle(
-                  fontSize: 24,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'OTP',
-                  hintText: 'Enter OTP',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(
-                    Icons.lock,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  contentPadding: EdgeInsets.all(16),
-                ),
-              ),
-              SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: isLoading ? null : verifyOTP, // Disable button during loading
-                style: ElevatedButton.styleFrom(
-                  primary: Theme.of(context).colorScheme.primary,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: isLoading
-                    ? CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      )
-                    : Text(
-                        'Verify OTP',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                        ),
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SuccessPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Success Page'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-              Icons.check_circle,
-              size: 100,
-              color: Colors.green,
-            ),
-            SizedBox(height: 30),
-            Text(
-              'OTP Verified Successfully!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-
 // import 'package:flutter/material.dart';
-// import 'package:hostelkube_frontend/src/features/features.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import './forgotpassword.dart';
+// import '../Signup/signup.dart';
+// import 'package:hostelkube_frontend/src/features/home/home.dart';
 
-// class OTPVerificationPage extends StatefulWidget {
-//   final String email; // Add a parameter to accept the email
 
-//   OTPVerificationPage({required this.email});
+// class OTPVerificationScreen extends StatefulWidget {
+//   final String phoneNumber; // Change to phoneNumber
+//   final String verificationId; // Add this line
+
+//   OTPVerificationScreen({required this.phoneNumber, required this.verificationId}); // Modify constructor
 
 //   @override
-//   _OTPVerificationPageState createState() => _OTPVerificationPageState();
+//   _OTPVerificationScreenState createState() => _OTPVerificationScreenState();
 // }
 
-// class _OTPVerificationPageState extends State<OTPVerificationPage> {
-//   final TextEditingController otpController = TextEditingController();
+// class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
+//   List<TextEditingController> otpControllers =
+//       List.generate(6, (index) => TextEditingController());
+//   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+//   void _verifyOTP() async {
+//     try {
+//       String otp = otpControllers.map((controller) => controller.text).join();
+//       PhoneAuthCredential credential = PhoneAuthProvider.credential(
+//         verificationId: widget.phoneNumber, // Change to phoneNumber
+//         smsCode: otp,
+//       );
+
+//       UserCredential userCredential =
+//           await _auth.signInWithCredential(credential);
+
+//       if (userCredential.user != null) {
+//         // User successfully verified, navigate to the next screen
+//         // Replace this with your desired navigation logic
+//         Navigator.of(context).pushReplacement(
+//           MaterialPageRoute(
+//             builder: (context) => HomeScreen(),
+//           ),
+//         );
+//       } else {
+//         _showSnackBar('OTP verification failed');
+//       }
+//     } catch (error) {
+//       print(error);
+//       _showSnackBar('Error occurred during OTP verification');
+//     }
+//   }
+
+//   void _showSnackBar(String message) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(
+//         content: Text(message),
+//         duration: Duration(seconds: 2),
+//       ),
+//     );
+//   }
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -199,115 +63,31 @@ class SuccessPage extends StatelessWidget {
 //       appBar: AppBar(
 //         title: Text('OTP Verification'),
 //       ),
-//       body: Center(
-//         child: Padding(
-//           padding: const EdgeInsets.all(16.0),
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.center,
-//             children: <Widget>[
-//               Text(
-//                 // 'Enter the OTP sent to ${widget.email}',
-//                 'Enter the OTP sent to', // Display the email
-//                 textAlign: TextAlign.center,
-//                 style: TextStyle(
-//                   fontSize: 24,
-//                   fontWeight: FontWeight.bold,
-//                   color: Theme.of(context).colorScheme.primary,
-//                 ),
-//               ),
-//               SizedBox(height: 30),
-//               TextFormField(
-//                 controller: otpController,
-//                 keyboardType: TextInputType.number,
-//                 style: TextStyle(
-//                   fontSize: 24,
-//                 ),
-//                 decoration: InputDecoration(
-//                   labelText: 'OTP',
-//                   hintText: 'Enter OTP',
-//                   border: OutlineInputBorder(),
-//                   prefixIcon: Icon(
-//                     Icons.lock,
-//                     color: Theme.of(context).colorScheme.primary,
-//                   ),
-//                   contentPadding: EdgeInsets.all(16),
-//                 ),
-//               ),
-//               SizedBox(height: 30),
-//               ElevatedButton(
-//                 onPressed: () {
-//                   // Add OTP verification logic here
-//                   String enteredOTP = otpController.text;
-//                   // Validate the OTP and navigate to the next screen
-//                   if (enteredOTP == '1234') {
-//                     Navigator.push(
-//                       context,
-//                       MaterialPageRoute(
-//                         builder: (context) => SuccessPage(),
-//                       ),
-//                     );
-//                   } else {
-//                     // Show an error message for an incorrect OTP
-//                     ScaffoldMessenger.of(context).showSnackBar(
-//                       SnackBar(
-//                         content: Text(
-//                           'Incorrect OTP. Please try again.',
-//                           style: TextStyle(
-//                             fontSize: 18,
-//                           ),
-//                         ),
-//                         backgroundColor: Theme.of(context).colorScheme.error,
-//                       ),
-//                     );
-//                   }
-//                 },
-//                 style: ElevatedButton.styleFrom(
-//                   primary: Theme.of(context).colorScheme.primary,
-//                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(30),
-//                   ),
-//                 ),
-//                 child: Text(
-//                   'Verify OTP',
-//                   style: TextStyle(
-//                     color: Colors.white,
-//                     fontSize: 24,
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class SuccessPage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Success Page'),
-//       ),
-//       body: Center(
+//       body: Padding(
+//         padding: EdgeInsets.all(16.0),
 //         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-//             Icon(
-//               Icons.check_circle,
-//               size: 100,
-//               color: Colors.green,
-//             ),
-//             SizedBox(height: 30),
-//             Text(
-//               'OTP Verified Successfully!',
-//               style: TextStyle(
-//                 fontSize: 24,
-//                 fontWeight: FontWeight.bold,
-//                 color: Theme.of(context).colorScheme.primary,
+//           children: [
+//             Text('Enter the OTP sent to your mobile number'), // Change text here
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: List.generate(
+//                 6,
+//                 (index) => SizedBox(
+//                   width: 40.0,
+//                   child: TextField(
+//                     controller: otpControllers[index],
+//                     textAlign: TextAlign.center,
+//                     keyboardType: TextInputType.number,
+//                     decoration: InputDecoration(
+//                       border: OutlineInputBorder(),
+//                     ),
+//                   ),
+//                 ),
 //               ),
+//             ),
+//             ElevatedButton(
+//               onPressed: _verifyOTP,
+//               child: Text('Verify OTP'),
 //             ),
 //           ],
 //         ),
@@ -315,3 +95,4 @@ class SuccessPage extends StatelessWidget {
 //     );
 //   }
 // }
+

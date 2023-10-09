@@ -14,7 +14,6 @@ const lightBillSchema = new mongoose.Schema({
     enum: ["pending", "paid"],
     default: "pending",
   },
-  // Add other fields related to light bills
 });
 
 const LightBill = mongoose.model("LightBill", lightBillSchema);

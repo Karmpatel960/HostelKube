@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import './room.dart';
+import './roomalot.dart';
 
 class AdminScreen extends StatelessWidget {
   @override
@@ -8,7 +10,36 @@ class AdminScreen extends StatelessWidget {
         title: Text('Admin Screen'),
       ),
       body: Center(
-        child: Text('Admin Screen Content'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Admin Screen Content'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to the "Add Room" page when the button is pressed
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AdminPage(), // Replace with your "Add Room" page
+                  ),
+                );
+              },
+              child: Text('Add Room'),
+            ),
+            SizedBox(height: 20),
+             ElevatedButton(
+              onPressed: () {
+                // Navigate to the "Add Room" page when the button is pressed
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AvailableRoomsPage(), // Replace with your "Add Room" page
+                  ),
+                );
+              },
+              child: Text('Add Student'),
+            ),
+          ],
+        ),
       ),
     );
   }

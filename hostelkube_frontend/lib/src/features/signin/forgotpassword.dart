@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hostelkube_frontend/src/features/features.dart';
-
 
 class PasswordPage extends StatelessWidget {
   @override
@@ -18,6 +18,29 @@ class PasswordPage extends StatelessWidget {
 }
 
 class ForgotPasswordPage extends StatelessWidget {
+  final TextEditingController emailController = TextEditingController();
+
+  Future<void> _resetPassword(BuildContext context) async {
+    final String email = emailController.text.trim();
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password reset email sent to $email.'),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password reset failed: $error'),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,6 +67,7 @@ class ForgotPasswordPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: TextField(
+                  controller: emailController,
                   style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     labelText: 'Enter your email',
@@ -65,7 +89,7 @@ class ForgotPasswordPage extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  // Add reset password logic here
+                  _resetPassword(context); // Call the reset password function
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -75,12 +99,11 @@ class ForgotPasswordPage extends StatelessWidget {
               SizedBox(height: 16.0),
               TextButton(
                 onPressed: () {
-                  // Add navigation to the login page
-                   Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => SignInPage(), // Replace with your LoginScreen widget
-      ),
-    );
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => SignInScreen(),
+                    ),
+                  );
                 },
                 child: Text(
                   'Back to Login',
@@ -89,13 +112,11 @@ class ForgotPasswordPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  // Add navigation to the registration page
-                     // Add navigation to the login page
-                   Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => SignUpPage(), // Replace with your LoginScreen widget
-      ),
-    );
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => SignUpPage(),
+                    ),
+                  );
                 },
                 child: Text(
                   "Don't have an account? Sign Up",
