@@ -177,19 +177,19 @@ class _SignInScreenState extends State<SignInScreen> {
                   style: TextStyle(color: Colors.black),
                 ),
               ),
-               TextButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => AdminScreen(),
-                    ),
-                  );
-                },
-                child: Text(
-                  "Admin",
-                  style: TextStyle(color: Colors.black),
-                ),
-              ),
+              //  TextButton(
+              //   onPressed: () {
+              //     Navigator.of(context).push(
+              //       MaterialPageRoute(
+              //         builder: (context) => AdminScreen(),
+              //       ),
+              //     );
+              //   },
+              //   child: Text(
+              //     "Admin",
+              //     style: TextStyle(color: Colors.black),
+              //   ),
+              // ),
             ],
           ),
         ),

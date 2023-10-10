@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart'; 
+import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class AdminPage extends StatefulWidget {
   @override
@@ -27,6 +30,7 @@ class _AdminPageState extends State<AdminPage> {
               },
               decoration: InputDecoration(labelText: 'Room Name'),
             ),
+            SizedBox(height: 20,),
             TextField(
               onChanged: (value) {
                 capacity = int.tryParse(value) ?? 0;
@@ -34,6 +38,7 @@ class _AdminPageState extends State<AdminPage> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: 'Capacity'),
             ),
+            SizedBox(height: 20,),
             TextField(
               onChanged: (value) {
                 pricing = double.tryParse(value) ?? 0.0;
@@ -41,6 +46,7 @@ class _AdminPageState extends State<AdminPage> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: 'Pricing'),
             ),
+            SizedBox(height: 20,),
             ElevatedButton(
               onPressed: () {
                 // Add room data to Firebase Realtime Database
@@ -56,14 +62,28 @@ class _AdminPageState extends State<AdminPage> {
 
 Future<void> addRoomData(String roomName, int capacity, double pricing) async {
   final DatabaseReference roomsRef = FirebaseDatabase.instance.reference().child('rooms');
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
   
   try {
     final newRoomRef = roomsRef.push(); // Create a new reference for the room
-    await newRoomRef.set({
+    final roomData = {
       'name': roomName,
       'capacity': capacity,
       'pricing': pricing,
-    });
+    };
+    await newRoomRef.set(roomData);
+
+    // Store room data in Cloud Firestore
+    if (user != null) {
+      final CollectionReference userRoomsCollection = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('rooms');
+      
+      final roomDocRef = await userRoomsCollection.add(roomData);
+      print('Room data added to Cloud Firestore with document ID: ${roomDocRef.id}');
+    }
 
     // Clear text fields after successful save
     setState(() {
@@ -85,5 +105,6 @@ Future<void> addRoomData(String roomName, int capacity, double pricing) async {
     );
   }
 }
+
 
 }

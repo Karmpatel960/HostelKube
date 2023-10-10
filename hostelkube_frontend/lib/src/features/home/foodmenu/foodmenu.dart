@@ -1,118 +1,105 @@
-// import 'package:flutter/material.dart';
-
-// class FoodmenuScreen extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: Text('food Screen'),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 
-class HostelFeeInfoPage extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Hostel Food Menu',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: FoodMenuPage(),
+    );
+  }
+}
+
+class FoodMenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hostel Fee Information'),
-        backgroundColor: Colors.blue,
+        title: Text('Hostel Food Menu'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.person),
+            onPressed: () {
+              // Navigate to the user profile page.
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.all(16.0),
-              color: Colors.blue,
-              child: Center(
-                child: Text(
-                  'Hostel Fee Information',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20.0),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Hostel Fee Structure',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            _buildFeeCard(
-              title: 'Single Room',
-              description: 'Single occupancy room with attached bathroom.',
-              fee: '₹ 5,000/month',
-            ),
-            _buildFeeCard(
-              title: 'Double Room',
-              description: 'Double occupancy room with shared bathroom.',
-              fee: '₹ 4,000/month',
-            ),
-            _buildFeeCard(
-              title: 'Triple Room',
-              description: 'Triple occupancy room with shared bathroom.',
-              fee: '₹ 3,000/month',
-            ),
-            _buildFeeCard(
-              title: 'Six Months Discount',
-              description: 'Pay for six months upfront and get 10% off.',
-              fee: '₹ 27,000 (Save ₹ 3,000)',
-            ),
-            _buildFeeCard(
-              title: 'One Year Discount',
-              description: 'Pay for one year upfront and get 20% off.',
-              fee: '₹ 48,000 (Save ₹ 12,000)',
-            ),
+          children: [
+            // Day-wise Menu
+            DayMenu(day: 'Monday', items: [
+              'Breakfast: Toast with Jam',
+              'Lunch: Vegetable Curry',
+              'Dinner: Rice with Dal',
+            ]),
+            DayMenu(day: 'Tuesday', items: [
+              'Breakfast: Oatmeal',
+              'Lunch: Paneer Tikka',
+              'Dinner: Roti with Mixed Vegetables',
+            ]),
+            DayMenu(day: 'Wednesday', items: [
+              'Breakfast: Idli with Sambar',
+              'Lunch: Rajma Chawal',
+              'Dinner: Vegetable Biryani',
+            ]),
+            DayMenu(day: 'Thursday', items: [
+              'Breakfast: Poha',
+              'Lunch: Aloo Paratha',
+              'Dinner: Chole with Rice',
+            ]),
+            DayMenu(day: 'Friday', items: [
+              'Breakfast: Upma',
+              'Lunch: Spinach and Cheese Quesadilla',
+              'Dinner: Vegetable Fried Rice',
+            ]),
+            DayMenu(day: 'Saturday', items: [
+              'Breakfast: Dosa with Coconut Chutney',
+              'Lunch: Veggie Burger',
+              'Dinner: Pasta Primavera',
+            ]),
+            DayMenu(day: 'Sunday', items: [
+              'Breakfast: Veggie Omelette',
+              'Lunch: Vegetable Pulao',
+              'Dinner: Pizza Margherita',
+            ]),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildFeeCard({String? title, String? description, String? fee}) {
+class DayMenu extends StatelessWidget {
+  final String day;
+  final List<String> items;
+
+  DayMenu({required this.day, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
-      elevation: 4.0,
-      margin: EdgeInsets.all(16.0),
+      margin: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
+        children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(8.0),
             child: Text(
-              title!,
+              day,
               style: TextStyle(
-                fontSize: 18.0,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              description!,
-              style: TextStyle(
-                fontSize: 16.0,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              fee!,
-              style: TextStyle(
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          Column(
+            children: items.map((item) => FoodItemCard(item: item)).toList(),
           ),
         ],
       ),
@@ -120,3 +107,16 @@ class HostelFeeInfoPage extends StatelessWidget {
   }
 }
 
+class FoodItemCard extends StatelessWidget {
+  final String item;
+
+  FoodItemCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(item),
+      // You can add more information about the menu item here
+    );
+  }
+}

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'dart:io';
+import 'package:open_file/open_file.dart';
 
 class TransactionPage extends StatefulWidget {
   @override
@@ -36,6 +41,49 @@ class _TransactionPageState extends State<TransactionPage> {
     }
   }
 
+  Future<void> generateAndSaveReceipt(Map<String, dynamic> transaction) async {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.Page(
+        build: (context) {
+          return pw.Center(
+            child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text('Receipt for Transaction', style: pw.TextStyle(fontSize: 20)),
+                pw.Text('Date: ${transaction['date']}'),
+                pw.Text('Amount: ${transaction['amount']}'),
+                pw.Text('Description: ${transaction['description']}'),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final file = File('${output.path}/receipt.pdf');
+    await file.writeAsBytes(await pdf.save());
+  }
+
+  void printReceipt(Map<String, dynamic> transaction) {
+    generateAndSaveReceipt(transaction);
+    // Optionally, you can display a confirmation message to the user here.
+  }
+
+  void downloadReceipt() async {
+    final output = await getTemporaryDirectory();
+    final file = File('${output.path}/receipt.pdf');
+    if (file.existsSync()) {
+      // Open the PDF using the default PDF viewer on the device.
+      await OpenFile.open(file.path);
+    } else {
+      // Handle the case where the PDF file does not exist.
+      // You can show an error message to the user.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,6 +105,23 @@ class _TransactionPageState extends State<TransactionPage> {
                 return ListTile(
                   title: Text('Date: $transactionDate'),
                   subtitle: Text('Amount: $transactionAmount | Description: $transactionDescription'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.print),
+                        onPressed: () {
+                          printReceipt(transaction);
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.download),
+                        onPressed: () {
+                          downloadReceipt();
+                        },
+                      ),
+                    ],
+                  ),
                 );
               },
             ),

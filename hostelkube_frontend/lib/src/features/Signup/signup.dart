@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; 
-// Import Firestore package
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../signin/signin.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -23,20 +21,19 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String registrationMessage = '';
 
-  Future<void> signUp() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        UserCredential userCredential = await _auth
-            .createUserWithEmailAndPassword(
-              email: emailController.text,
-              password: passwordController.text,
-            );
+Future<void> signUp() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
 
-        if (userCredential.user != null) {
-          await userCredential.user!.sendEmailVerification();
+      if (userCredential.user != null) {
+        await userCredential.user!.sendEmailVerification();
 
-          // Save the selected role to Firestore
-           await saveUserData(
+        // Save the selected role to Cloud Firestore
+        await saveUserData(
           userCredential.user!.uid,
           nameController.text,
           emailController.text,
@@ -44,54 +41,55 @@ class _SignUpPageState extends State<SignUpPage> {
           selectedRole,
         );
 
-          Fluttertoast.showToast(
-            msg: "Registration successful. Please verify your email.",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.green,
-            textColor: Colors.white,
-          );
-          // Clear text fields
-          nameController.clear();
-          emailController.clear();
-          mobileController.clear();
-          passwordController.clear();
-          // Navigate to the sign-in screen
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => SignInScreen(),
-            ),
-          );
-        }
-      } catch (e) {
         Fluttertoast.showToast(
-          msg: "Registration failed: $e",
-          toastLength: Toast.LENGTH_SHORT,
+          msg: "Registration successful. Please verify your email.",
+          toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.green,
           textColor: Colors.white,
         );
+        // Clear text fields
+        nameController.clear();
+        emailController.clear();
+        mobileController.clear();
+        passwordController.clear();
+        // Navigate to the sign-in screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => SignInScreen(),
+          ),
+        );
       }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Registration failed: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
     }
   }
+}
 
 Future<void> saveUserData(String userId, String name, String email, String mobile, String role) async {
-  final DatabaseReference userRef = FirebaseDatabase.instance.reference().child('users').child(userId);
+  final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
 
   try {
-    await userRef.set({
+    await usersCollection.doc(userId).set({
       'name': name,
       'email': email,
       'mobile': mobile,
       'selectedRole': role,
     });
-    print('Data saved to Firebase Realtime Database');
+    print('Data saved to Cloud Firestore');
   } catch (error) {
     print('Error saving user data: $error');
   }
 }
+
 
 
 

@@ -94,7 +94,7 @@ Future<String> fetchUserName(String userId) async {
     HomePageContent(userName: userName),
     TransactionPage(),
     // FoodmenuScreen(),
-    HostelFeeInfoPage(),
+    FoodMenuPage(),
     ProfileScreen(),
   ];
     return Scaffold(
@@ -189,6 +189,11 @@ Future<String> fetchUserName(String userId) async {
               leading: Icon(Icons.info),
               title: Text('About Us'),
               onTap: () {
+                     Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => AdminScreen(),
+        ),
+      );
                 // Add code to navigate to the "About Us" screen here
               },
             ),
@@ -311,7 +316,7 @@ class TopBox extends StatelessWidget {
                   ),
                   SizedBox(width: 15),
                   Text(
-                    'Room No: 101',
+                    'Room No: Not Alloted',
                     style: TextStyle(color: Colors.white),
                   ),
                 ],
@@ -326,7 +331,7 @@ class TopBox extends StatelessWidget {
                   ),
                   SizedBox(width: 15),
                   Text(
-                    'Check-out: August 25, 2023',
+                    'Check-out: Not Alloted',
                     style: TextStyle(color: Colors.white),
                   ),
                 ],
@@ -421,6 +426,10 @@ class HomePageContent extends StatelessWidget {
                 flex: 1,
                 child: GestureDetector(
                   onTap: () {
+                       Navigator.of(context).push(
+                   MaterialPageRoute(
+                            builder: (context) => AvailableRoomsPage(),
+                    ),);
                     // Handle the button tap for Room Service
                   },
                   child: ServiceContainer(
@@ -433,6 +442,10 @@ class HomePageContent extends StatelessWidget {
                 flex: 1,
                 child: GestureDetector(
                   onTap: () {
+                     Navigator.of(context).push(
+                   MaterialPageRoute(
+                            builder: (context) => AvailableRoomsPage(),
+                    ),);
                     // Handle the button tap for Restaurant Menu
                   },
                   child: ServiceContainer(
@@ -445,6 +458,7 @@ class HomePageContent extends StatelessWidget {
                 flex: 1,
                 child: GestureDetector(
                   onTap: () {
+                    
                     // Handle the button tap for Local Laundry Service
                   },
                   child: ServiceContainer(
@@ -463,6 +477,10 @@ class HomePageContent extends StatelessWidget {
                 flex: 1,
                 child: GestureDetector(
                   onTap: () {
+                  Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => TransactionPage(),
+        ),);
                     // Handle the button tap for Local Offer
                   },
                   child: ServiceContainer(
@@ -476,6 +494,11 @@ class HomePageContent extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     // Handle the button tap for Local Parking
+                     Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => TransactionPage(),
+        ),
+      );
                   },
                   child: ServiceContainer(
                      imageAsset: 'assets/Image6.png',
@@ -490,7 +513,7 @@ class HomePageContent extends StatelessWidget {
       // Navigate to the AdminPage when the button is tapped
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => AdminScreen(),
+          builder: (context) => IssuePage(),
         ),
       );
     },
