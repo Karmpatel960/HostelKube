@@ -24,7 +24,7 @@ class Routes {
       //   return MaterialPageRoute(builder: (_) => HomeScreen());
 
       case adminRoute:
-        return MaterialPageRoute(builder: (_) => AdminScreen());
+        return MaterialPageRoute(builder: (_) => AdminHomePage());
 
       case loginRoute:
         return MaterialPageRoute(builder: (_) => LoginScreen());
