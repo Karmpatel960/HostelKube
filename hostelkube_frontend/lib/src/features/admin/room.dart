@@ -1,110 +1,135 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-
-class AdminPage extends StatefulWidget {
+class AddRoomPage extends StatefulWidget {
   @override
-  _AdminPageState createState() => _AdminPageState();
+  _AddRoomPageState createState() => _AddRoomPageState();
 }
 
-class _AdminPageState extends State<AdminPage> {
-  String roomName = '';
-  int capacity = 0;
-  double pricing = 0.0;
+class _AddRoomPageState extends State<AddRoomPage> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController roomNumberController = TextEditingController();
+  final TextEditingController capacityController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+   final TextEditingController pricePerBedController = TextEditingController();
+
+void _addRoomToFirestore() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user != null) {
+    final roomData = {
+      'roomNumber': roomNumberController.text,
+      'capacity': int.parse(capacityController.text),
+      'description': descriptionController.text,
+      'pricePerBed': double.parse(pricePerBedController.text), // Add price per bed
+      'createdBy': user.uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    try {
+      await FirebaseFirestore.instance.collection('rooms').add(roomData);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Room added to Firestore')),
+      );
+      roomNumberController.clear();
+      capacityController.clear();
+      descriptionController.clear();
+      pricePerBedController.clear(); // Clear the price per bed field
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding room: $error')),
+      );
+    }
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Page'),
+        title: Text('Add Room'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              onChanged: (value) {
-                roomName = value;
-              },
-              decoration: InputDecoration(labelText: 'Room Name'),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(
+                  Icons.home,
+                  size: 100,
+                  color: Colors.blue,
+                ),
+                TextFormField(
+                  controller: roomNumberController,
+                  decoration: InputDecoration(
+                    labelText: 'Room Number',
+                    icon: Icon(Icons.home),
+                  ),
+                  validator: (value) {
+                    if (value != null && value.isEmpty) {
+                      return 'Please enter a room number';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: capacityController,
+                  decoration: InputDecoration(
+                    labelText: 'Capacity',
+                    icon: Icon(Icons.person),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value != null && value.isEmpty) {
+                      return 'Please enter the room capacity';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+  controller: pricePerBedController,
+  decoration: InputDecoration(
+    labelText: 'Price per Bed',
+    icon: Icon(Icons.attach_money),
+  ),
+  keyboardType: TextInputType.numberWithOptions(decimal: true),
+  validator: (value) {
+    if (value != null && value.isEmpty) {
+      return 'Please enter the price per bed';
+    }
+    return null;
+  },
+),
+
+                TextFormField(
+                  controller: descriptionController,
+                  decoration: InputDecoration(
+                    labelText: 'Description',
+                    icon: Icon(Icons.description),
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState != null) {
+                      if (_formKey.currentState!.validate()) {
+                        _addRoomToFirestore();
+                      }
+                    }
+                  },
+                  
+                  child: Text('Add Room'),
+                ),
+              ],
             ),
-            SizedBox(height: 20,),
-            TextField(
-              onChanged: (value) {
-                capacity = int.tryParse(value) ?? 0;
-              },
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Capacity'),
-            ),
-            SizedBox(height: 20,),
-            TextField(
-              onChanged: (value) {
-                pricing = double.tryParse(value) ?? 0.0;
-              },
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Pricing'),
-            ),
-            SizedBox(height: 20,),
-            ElevatedButton(
-              onPressed: () {
-                // Add room data to Firebase Realtime Database
-                addRoomData(roomName, capacity, pricing);
-              },
-              child: Text('Add Room'),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
-
-Future<void> addRoomData(String roomName, int capacity, double pricing) async {
-  final DatabaseReference roomsRef = FirebaseDatabase.instance.reference().child('rooms');
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  final User? user = auth.currentUser;
-  
-  try {
-    final newRoomRef = roomsRef.push(); // Create a new reference for the room
-    final roomData = {
-      'name': roomName,
-      'capacity': capacity,
-      'pricing': pricing,
-    };
-    await newRoomRef.set(roomData);
-
-    // Store room data in Cloud Firestore
-    if (user != null) {
-      final CollectionReference userRoomsCollection = FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('rooms');
-      
-      final roomDocRef = await userRoomsCollection.add(roomData);
-      print('Room data added to Cloud Firestore with document ID: ${roomDocRef.id}');
-    }
-
-    // Clear text fields after successful save
-    setState(() {
-      roomName = '';
-      capacity = 0;
-      pricing = 0.0;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Room added successfully'),
-      ),
-    );
-  } catch (error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error: $error'),
-      ),
-    );
-  }
-}
-
-
 }

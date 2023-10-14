@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import './room.dart';
 
 class AdminHomePage extends StatelessWidget {
+  final String userId; // User ID passed to this screen
+
+  AdminHomePage({required this.userId});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,6 +68,7 @@ class AdminHomePage extends StatelessWidget {
                 ),
               ],
             ),
+            SizedBox(height: 10), // Add a gap between rows
             // Create another row with two clickable boxes
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -94,6 +99,7 @@ class AdminHomePage extends StatelessWidget {
                 ),
               ],
             ),
+            SizedBox(height: 10), // Add a gap between rows
             // Create the last row with two clickable boxes
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -151,7 +157,7 @@ class AdminHomePage extends StatelessWidget {
   }
 }
 
-class ClickableBox extends StatelessWidget {
+class ClickableBox extends StatefulWidget {
   final String text;
   final IconData icon;
   final VoidCallback onPressed;
@@ -159,31 +165,46 @@ class ClickableBox extends StatelessWidget {
   ClickableBox({required this.text, required this.icon, required this.onPressed});
 
   @override
+  _ClickableBoxState createState() => _ClickableBoxState();
+}
+
+class _ClickableBoxState extends State<ClickableBox> {
+  bool isTapped = false;
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
+      onTap: () {
+        setState(() {
+          isTapped = !isTapped;
+        });
+        if (isTapped) {
+          // Navigate to the specified page
+          widget.onPressed();
+        }
+      },
       child: Container(
         width: 150,
         height: 150,
         decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.circular(10),
+          color: isTapped ? Colors.grey : Colors.blue,
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              icon,
+              widget.icon,
               size: 60,
-              color: Colors.white,
+              color: isTapped ? Colors.blue : Colors.white,
             ),
             SizedBox(height: 10),
             Text(
-              text,
+              widget.text,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: isTapped ? Colors.blue : Colors.white,
               ),
             ),
           ],
@@ -195,19 +216,21 @@ class ClickableBox extends StatelessWidget {
 
 
 
-class AddRoomPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add Room'),
-      ),
-      body: Center(
-        child: Text('Add Room Form Goes Here'),
-      ),
-    );
-  }
-}
+
+
+// class AddRoomPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Add Room'),
+//       ),
+//       body: Center(
+//         child: Text('Add Room Form Goes Here'),
+//       ),
+//     );
+//   }
+// }
 
 class AddStudentPage extends StatelessWidget {
   @override

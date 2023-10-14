@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hostelkube_frontend/src/features/features.dart';
 import '../Signup/signup.dart';
@@ -30,46 +31,122 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Future<void> _signIn() async {
-    final email = emailController.text;
-    final password = passwordController.text;
+  final email = emailController.text;
+  final password = passwordController.text;
 
-    if (!isValidEmail(email)) {
-      _showSnackBar('Invalid email address');
-      return;
-    }
+  if (!isValidEmail(email)) {
+    _showSnackBar('Invalid email address');
+    return;
+  }
 
-    try {
-      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+  try {
+    final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-      if (userCredential.user != null) {
-        final user = userCredential.user!;
-        final prefs = await SharedPreferences.getInstance();
-        prefs.setString('userId', user.uid);
+    if (userCredential.user != null) {
+      final user = userCredential.user!;
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('userId', user.uid);
 
-        if (!user.emailVerified) {
-          await user.sendEmailVerification();
-          _showSnackBar(
-            'A verification link has been sent to your email address. Please check your email and click on the link to verify your email before signing in.',
+      if (!user.emailVerified) {
+        await user.sendEmailVerification();
+        _showSnackBar(
+          'A verification link has been sent to your email address. Please check your email and click on the link to verify your email before signing in.',
+        );
+      } else {
+        final userId = user.uid;
+        final userRole = await getUserRoleFromFirebase(email);
+
+        if (userRole == 'admin') {
+          // Redirect to the admin page
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => AdminHomePage(userId: userId),
+            ),
           );
         } else {
-          final userId = user.uid;
+          // Redirect to the user/home page
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => HomeScreen(userId: userId),
             ),
           );
         }
-      } else {
-        _showSnackBar('Sign-in failed');
       }
-    } catch (error) {
-      print(error);
-      _showSnackBar('Error occurred during sign-in: $error');
+    } else {
+      _showSnackBar('Sign-in failed');
     }
+  } catch (error) {
+    print(error);
+    _showSnackBar('Error occurred during sign-in: $error');
   }
+}
+
+Future<String> getUserRoleFromFirebase(String email) async {
+  try {
+    final usersCollection = FirebaseFirestore.instance.collection('users');
+    final querySnapshot = await usersCollection.where('email', isEqualTo: email).get();
+  
+    if (querySnapshot.docs.isNotEmpty) {
+      final userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+      final userRole = userData['selectedRole'];
+      return userRole;
+    }
+    
+    // Handle the case where the user's data is not found in Firestore
+    return 'user'; // Default role if not found
+  } catch (error) {
+    // Handle any potential errors, e.g., network issues, Firestore errors, etc.
+    print('Error while fetching user role: $error');
+    return 'user'; // Default role if there's an error
+  }
+}
+
+
+
+  // Future<void> _signIn() async {
+  //   final email = emailController.text;
+  //   final password = passwordController.text;
+
+  //   if (!isValidEmail(email)) {
+  //     _showSnackBar('Invalid email address');
+  //     return;
+  //   }
+
+  //   try {
+  //     final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+  //       email: email,
+  //       password: password,
+  //     );
+
+  //     if (userCredential.user != null) {
+  //       final user = userCredential.user!;
+  //       final prefs = await SharedPreferences.getInstance();
+  //       prefs.setString('userId', user.uid);
+
+  //       if (!user.emailVerified) {
+  //         await user.sendEmailVerification();
+  //         _showSnackBar(
+  //           'A verification link has been sent to your email address. Please check your email and click on the link to verify your email before signing in.',
+  //         );
+  //       } else {
+  //         final userId = user.uid;
+  //         Navigator.of(context).pushReplacement(
+  //           MaterialPageRoute(
+  //             builder: (context) => HomeScreen(userId: userId),
+  //           ),
+  //         );
+  //       }
+  //     } else {
+  //       _showSnackBar('Sign-in failed');
+  //     }
+  //   } catch (error) {
+  //     print(error);
+  //     _showSnackBar('Error occurred during sign-in: $error');
+  //   }
+  // }
 
 
 

@@ -191,7 +191,7 @@ Future<String> fetchUserName(String userId) async {
               onTap: () {
                      Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => AdminHomePage(),
+          builder: (context) => AdminHomePage(userId: userId,),
         ),
       );
                 // Add code to navigate to the "About Us" screen here
