@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -9,7 +8,6 @@ class AvailableRoomsPage extends StatefulWidget {
 }
 
 class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
-  late final DatabaseReference roomsRef;
   List<Map<String, dynamic>> availableRooms = [];
 
   late final Razorpay _razorpay;
@@ -18,7 +16,6 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
   @override
   void initState() {
     super.initState();
-    roomsRef = FirebaseDatabase.instance.reference().child('rooms');
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
@@ -34,16 +31,11 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
 
   void fetchAvailableRooms() async {
     try {
-      final DataSnapshot snapshot = await roomsRef.once() as DataSnapshot;
-      if (snapshot.value != null) {
-        Map<dynamic, dynamic> values = snapshot.value as Map<dynamic, dynamic>;
+      final roomsSnapshot = await FirebaseFirestore.instance.collection('rooms').get();
+      if (roomsSnapshot.docs.isNotEmpty) {
+        final roomsData = roomsSnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
         setState(() {
-          availableRooms.clear();
-          values.forEach((key, value) {
-            if (value is Map<String, dynamic>) {
-              availableRooms.add(value);
-            }
-          });
+          availableRooms = roomsData;
         });
       }
     } catch (error) {
@@ -51,12 +43,13 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
     }
   }
 
-  void openPaymentGateway(double amount) {
+  void openPaymentGateway(Map<String, dynamic> room) {
+    final roomPricing = room['pricePerBed'];
     var options = {
       'key': 'rzp_test_wkBRMs93DQ7Iva',
-      'amount': amount * 100, // Amount in paise
+      'amount': roomPricing * 100, // Amount in paise
       'name': 'Room Booking',
-      'description': 'Room booking payment',
+      'description': 'Room booking payment for ${room['roomNumber']}',
       'prefill': {'contact': '', 'email': ''},
     };
     try {
@@ -69,15 +62,12 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
     try {
       final room = availableRooms[selectedRoomIndex!];
-      final roomName = room['name'];
-      final roomCapacity = room['capacity'];
-      final roomPricing = room['pricing'];
 
       // Store booking data in Cloud Firestore
       await FirebaseFirestore.instance.collection('bookings').add({
-        'roomName': roomName,
-        'roomCapacity': roomCapacity,
-        'roomPricing': roomPricing,
+        'roomNumber': room['roomNumber'],
+        'roomCapacity': room['capacity'],
+        'roomPricing': room['pricePerBed'],
         'timestamp': FieldValue.serverTimestamp(),
       });
 
@@ -122,19 +112,16 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
         itemCount: availableRooms.length,
         itemBuilder: (context, index) {
           final room = availableRooms[index];
-          final roomName = room['name'];
-          final roomCapacity = room['capacity'];
-          final roomPricing = room['pricing'];
 
           return ListTile(
-            title: Text('Room: $roomName'),
-            subtitle: Text('Capacity: $roomCapacity | Pricing: $roomPricing'),
+            title: Text('Room: ${room['roomNumber']}'),
+            subtitle: Text('Capacity: ${room['capacity']} | Price per Bed: \₹${room['pricePerBed']}'),
             trailing: ElevatedButton(
               onPressed: () {
                 setState(() {
                   selectedRoomIndex = index;
                 });
-                openPaymentGateway(roomPricing);
+                openPaymentGateway(room);
               },
               child: Text('Book'),
             ),
@@ -173,3 +160,6 @@ class SuccessfulBookingPage extends StatelessWidget {
     );
   }
 }
+
+
+

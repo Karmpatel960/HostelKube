@@ -22,10 +22,23 @@ void _addRoomToFirestore() async {
       'roomNumber': roomNumberController.text,
       'capacity': int.parse(capacityController.text),
       'description': descriptionController.text,
-      'pricePerBed': double.parse(pricePerBedController.text), // Add price per bed
+      'pricePerBed': double.parse(pricePerBedController.text),
       'createdBy': user.uid,
       'createdAt': FieldValue.serverTimestamp(),
     };
+
+    // Check if a room with the same room number already exists
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('rooms')
+        .where('roomNumber', isEqualTo: roomNumberController.text)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Room with the same room number already exists')),
+      );
+      return; // Don't add the room if it already exists
+    }
 
     try {
       await FirebaseFirestore.instance.collection('rooms').add(roomData);
@@ -35,7 +48,7 @@ void _addRoomToFirestore() async {
       roomNumberController.clear();
       capacityController.clear();
       descriptionController.clear();
-      pricePerBedController.clear(); // Clear the price per bed field
+      pricePerBedController.clear();
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error adding room: $error')),
@@ -43,6 +56,7 @@ void _addRoomToFirestore() async {
     }
   }
 }
+
 
 
   @override

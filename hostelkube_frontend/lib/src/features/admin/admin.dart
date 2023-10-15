@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './room.dart';
+import 'RoomList.dart';
 
 class AdminHomePage extends StatelessWidget {
   final String userId; // User ID passed to this screen
@@ -260,19 +261,19 @@ class AddFurniturePage extends StatelessWidget {
   }
 }
 
-class ShowRoomsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Show Existing Rooms'),
-      ),
-      body: Center(
-        child: Text('List of Existing Rooms Goes Here'),
-      ),
-    );
-  }
-}
+// class ShowRoomsPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Show Existing Rooms'),
+//       ),
+//       body: Center(
+//         child: Text('List of Existing Rooms Goes Here'),
+//       ),
+//     );
+//   }
+// }
 
 class LightBillsPage extends StatelessWidget {
   @override

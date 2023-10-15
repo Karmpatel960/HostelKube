@@ -104,52 +104,6 @@ Future<String> getUserRoleFromFirebase(String email) async {
   }
 }
 
-
-
-  // Future<void> _signIn() async {
-  //   final email = emailController.text;
-  //   final password = passwordController.text;
-
-  //   if (!isValidEmail(email)) {
-  //     _showSnackBar('Invalid email address');
-  //     return;
-  //   }
-
-  //   try {
-  //     final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-  //       email: email,
-  //       password: password,
-  //     );
-
-  //     if (userCredential.user != null) {
-  //       final user = userCredential.user!;
-  //       final prefs = await SharedPreferences.getInstance();
-  //       prefs.setString('userId', user.uid);
-
-  //       if (!user.emailVerified) {
-  //         await user.sendEmailVerification();
-  //         _showSnackBar(
-  //           'A verification link has been sent to your email address. Please check your email and click on the link to verify your email before signing in.',
-  //         );
-  //       } else {
-  //         final userId = user.uid;
-  //         Navigator.of(context).pushReplacement(
-  //           MaterialPageRoute(
-  //             builder: (context) => HomeScreen(userId: userId),
-  //           ),
-  //         );
-  //       }
-  //     } else {
-  //       _showSnackBar('Sign-in failed');
-  //     }
-  //   } catch (error) {
-  //     print(error);
-  //     _showSnackBar('Error occurred during sign-in: $error');
-  //   }
-  // }
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -254,19 +208,6 @@ Future<String> getUserRoleFromFirebase(String email) async {
                   style: TextStyle(color: Colors.black),
                 ),
               ),
-              //  TextButton(
-              //   onPressed: () {
-              //     Navigator.of(context).push(
-              //       MaterialPageRoute(
-              //         builder: (context) => AdminScreen(),
-              //       ),
-              //     );
-              //   },
-              //   child: Text(
-              //     "Admin",
-              //     style: TextStyle(color: Colors.black),
-              //   ),
-              // ),
             ],
           ),
         ),
