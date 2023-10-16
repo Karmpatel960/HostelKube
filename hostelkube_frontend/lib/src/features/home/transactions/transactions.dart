@@ -1,39 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
+import 'package:open_file/open_file.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
-import 'package:open_file/open_file.dart';
-
 class TransactionPage extends StatefulWidget {
+  final String userId;
+
+  TransactionPage({required this.userId});
+
   @override
   _TransactionPageState createState() => _TransactionPageState();
 }
 
 class _TransactionPageState extends State<TransactionPage> {
-  final DatabaseReference transactionsRef =
-      FirebaseDatabase.instance.reference().child('transactions');
-  List<Map<String, dynamic>> transactions = [];
+  final CollectionReference bookingsRef = FirebaseFirestore.instance.collection('bookings');
+  List<Map<String, dynamic>> bookings = [];
 
   @override
   void initState() {
     super.initState();
-    fetchTransactions();
+    fetchBookings();
   }
 
-  void fetchTransactions() async {
+  void fetchBookings() async {
     try {
-      final DataSnapshot snapshot = await transactionsRef.once() as DataSnapshot;
-      if (snapshot.value != null) {
-        Map<dynamic, dynamic> values = snapshot.value as Map<dynamic, dynamic>;
+      final QuerySnapshot snapshot = await bookingsRef.where('userId', isEqualTo: widget.userId).get();
+      if (snapshot.docs.isNotEmpty) {
         setState(() {
-          transactions.clear();
-          values.forEach((key, value) {
-            if (value is Map<String, dynamic>) {
-              transactions.add(value);
-            }
-          });
+          bookings.clear();
+          bookings = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
         });
       }
     } catch (error) {
@@ -41,86 +37,67 @@ class _TransactionPageState extends State<TransactionPage> {
     }
   }
 
-  Future<void> generateAndSaveReceipt(Map<String, dynamic> transaction) async {
-    final pdf = pw.Document();
-    pdf.addPage(
-      pw.Page(
-        build: (context) {
-          return pw.Center(
-            child: pw.Column(
-              mainAxisAlignment: pw.MainAxisAlignment.center,
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
-              children: [
-                pw.Text('Receipt for Transaction', style: pw.TextStyle(fontSize: 20)),
-                pw.Text('Date: ${transaction['date']}'),
-                pw.Text('Amount: ${transaction['amount']}'),
-                pw.Text('Description: ${transaction['description']}'),
-              ],
-            ),
-          );
-        },
-      ),
-    );
 
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/receipt.pdf');
-    await file.writeAsBytes(await pdf.save());
-  }
 
-  void printReceipt(Map<String, dynamic> transaction) {
-    generateAndSaveReceipt(transaction);
-    // Optionally, you can display a confirmation message to the user here.
-  }
+Future<void> generateAndOpenReceipt(Map<String, dynamic> booking) async {
+  final pdf = pw.Document();
+  pdf.addPage(
+    pw.Page(
+      build: (context) {
+        return pw.Center(
+          child: pw.Column(
+            mainAxisAlignment: pw.MainAxisAlignment.center,
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Text('Receipt for Booking', style: pw.TextStyle(fontSize: 20)),
+              pw.Text('Room Number: ${booking['roomNumber']}'),
+              pw.Text('Room Pricing: ₹${booking['roomPricing']}'),
+              pw.Text('User: ${booking['user']}'),
+              pw.Text('Transaction ID: ${booking['transactionId']}'),
+            ],
+          ),
+        );
+      },
+    ),
+  );
 
-  void downloadReceipt() async {
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/receipt.pdf');
-    if (file.existsSync()) {
-      // Open the PDF using the default PDF viewer on the device.
-      await OpenFile.open(file.path);
-    } else {
-      // Handle the case where the PDF file does not exist.
-      // You can show an error message to the user.
-    }
-  }
+  final output = await getApplicationDocumentsDirectory(); // Save in app's documents directory
+  final file = File('${output.path}/receipt.pdf');
+  await file.writeAsBytes(await pdf.save());
+
+  // Open the PDF using the default PDF viewer on the device
+  await OpenFile.open(file.path);
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Transaction History'),
+        title: Text('Booking History'),
       ),
-      body: transactions.isEmpty
+      body: bookings.isEmpty
           ? Center(
-              child: Text('No transactions found.'),
+              child: Text('No bookings found.'),
             )
           : ListView.builder(
-              itemCount: transactions.length,
+              itemCount: bookings.length,
               itemBuilder: (context, index) {
-                final transaction = transactions[index];
-                final transactionDate = transaction['date'];
-                final transactionAmount = transaction['amount'];
-                final transactionDescription = transaction['description'];
+                final booking = bookings[index];
+                final roomNumber = booking['roomNumber'];
+                final roomPricing = booking['roomPricing'];
+                final user = booking['userName'];
+                final transactionId = booking['transactionId'];
 
                 return ListTile(
-                  title: Text('Date: $transactionDate'),
-                  subtitle: Text('Amount: $transactionAmount | Description: $transactionDescription'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.print),
-                        onPressed: () {
-                          printReceipt(transaction);
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.download),
-                        onPressed: () {
-                          downloadReceipt();
-                        },
-                      ),
-                    ],
+                  title: Text('Room Number: $roomNumber'),
+                  subtitle: Text('Price: $roomPricing | User: $user'),
+                  trailing: TextButton(
+                    onPressed: () {
+                      // Handle viewing or printing the receipt
+                      // You can call a function similar to printReceipt here.
+                    },
+                    child: Text('View Receipt'),
                   ),
                 );
               },

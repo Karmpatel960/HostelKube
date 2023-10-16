@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/src/router/router.dart';
+import '/src/features/features.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -11,38 +12,53 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _mounted = true;
   @override
   void initState() {
     super.initState();
     _checkAutoLogin();
 
     // Simulate some time-taking initialization process.
-    Future.delayed(Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, Routes.welcomeRoute);
+   Future.delayed(Duration(seconds: 3), () {
+    if (_mounted) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Welcome()));
+    }
     });
   }
 
-  Future<void> _checkAutoLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-
-    if (userId != null) {
-      final userRole = await getUserRoleFromFirebase(userId); // Pass user ID
-
-      String destinationRoute;
-
-      if (userRole == 'admin') {
-        destinationRoute = Routes.adminRoute;
-      } else {
-        destinationRoute = Routes.homeRoute;
-      }
-
-      // Delay the navigation slightly to give the app time to finish initializing.
-      Future.delayed(Duration(seconds: 1), () {
-        Navigator.pushReplacementNamed(context, destinationRoute);
-      });
-    }
+  void dispose() {
+    _mounted = false; // Set the flag to false when the widget is disposed.
+    super.dispose();
   }
+
+Future<void> _checkAutoLogin() async {
+  if (!mounted) {
+    return; // Check if the widget is still mounted
+  }
+
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getString('userId');
+
+  if (userId != null) {
+    final userRole = await getUserRoleFromFirebase(userId); // Pass user ID
+
+    if (!mounted) {
+      return; // Check if the widget is still mounted
+    }
+
+    Widget destinationScreen;
+
+    if (userRole == 'admin') {
+      destinationScreen = AdminHomePage(userId: userId);
+    } else {
+      destinationScreen = HomeScreen(userId: userId);
+    }
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => destinationScreen));
+  }
+}
+
+
+
 
   Future<String> getUserRoleFromFirebase(String userId) async {
     try {

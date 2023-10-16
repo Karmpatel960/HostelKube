@@ -4,12 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hostelkube_frontend/src/features/features.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfileScreen extends StatefulWidget {
+class AProfileScreen extends StatefulWidget {
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _AProfileScreenState createState() => _AProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _AProfileScreenState extends State<AProfileScreen> {
   String userName = ''; // Initialize with an empty string
 
   @override
@@ -47,8 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void logout() async {
     try {
       await FirebaseAuth.instance.signOut();
-
-       final prefs = await SharedPreferences.getInstance();
+        final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => SignInScreen(), // Replace with your sign-in screen
@@ -61,6 +60,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Profile'),
+         actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.notifications),
+            onPressed: () {
+              // Handle notifications or alerts
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              // Handle settings
+            },
+          ),
+        ], // Set the title here
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -69,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               SizedBox(height: 20),
               CircleAvatar(
                 radius: 60,
-                backgroundImage: AssetImage('assets/profile_image.jpg'),
+                backgroundImage: AssetImage('./profile_image.jpg'),
               ),
               SizedBox(height: 20),
               Text(
@@ -137,3 +153,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+

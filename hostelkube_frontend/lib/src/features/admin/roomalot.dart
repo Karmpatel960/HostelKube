@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AvailableRoomsPage extends StatefulWidget {
+
+  final String userId;
+  final String userName;
+
+  AvailableRoomsPage({
+    required this.userId,
+    required this.userName,
+  });
+
   @override
   _AvailableRoomsPageState createState() => _AvailableRoomsPageState();
 }
@@ -60,29 +70,63 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    try {
-      final room = availableRooms[selectedRoomIndex!];
+  try {
+    final room = availableRooms[selectedRoomIndex!];
 
-      // Store booking data in Cloud Firestore
-      await FirebaseFirestore.instance.collection('bookings').add({
-        'roomNumber': room['roomNumber'],
-        'roomCapacity': room['capacity'],
+    if (widget.userId != null && widget.userName != null) {
+      // Get the roomId of the selected room
+      final roomId = room['roomId'];
+
+      // Add the user to the room's user list
+      final roomRef = FirebaseFirestore.instance.collection('rooms').doc(roomId);
+     final updatedCapacity = room['capacity'] - 1;
+        roomRef.update({
+           'capacity': updatedCapacity,
+          'users': FieldValue.arrayUnion([widget.userId]),
+       });
+
+      final transactionId = response.paymentId;
+
+      // Define the payment data
+      final paymentData = {
+        'roomId': room['roomId'],
         'roomPricing': room['pricePerBed'],
+        'userId': widget.userId,
+        'userName': widget.userName,
+        'roomNumber': room['roomNumber'],
+        'transactionId': transactionId,
         'timestamp': FieldValue.serverTimestamp(),
-      });
+      };
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SuccessfulBookingPage()),
-      );
-    } catch (e) {
+      // Save payment data to Firestore
+      await FirebaseFirestore.instance.collection('bookings').add(paymentData);
+
+      // ignore: use_build_context_synchronously
+     Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => SuccessfulBookingPage(transactionId: transactionId ?? 'defaultTransactionId'),
+  ),
+);
+
+
+      // Rest of your code...
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
+          content: Text('User not authenticated.'),
         ),
       );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error: $e'),
+      ),
+    );
   }
+}
+
 
   void _handlePaymentError(PaymentFailureResponse response) {
     // Handle payment error
@@ -134,32 +178,30 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
 }
 
 class SuccessfulBookingPage extends StatelessWidget {
+  final String transactionId; // Add a parameter to accept the booking ID
+
+  SuccessfulBookingPage({required this.transactionId});
+
   @override
   Widget build(BuildContext context) {
+    // Use the bookingId parameter to display information or perform actions related to the booking.
     return Scaffold(
       appBar: AppBar(
-        title: Text('Booking Successful'),
+        title: Text('Successful Booking'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.check_circle,
-              color: Colors.green,
-              size: 100,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Booking Successful!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            Text('Booking ID: $transactionId'),
+            // Add other content related to the successful booking
           ],
         ),
       ),
     );
   }
 }
+
 
 
 

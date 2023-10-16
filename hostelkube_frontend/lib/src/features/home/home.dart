@@ -91,8 +91,8 @@ Future<String> fetchUserName(String userId) async {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
-    HomePageContent(userName: userName),
-    TransactionPage(),
+    HomePageContent(userName: userName,userId: userId,),
+    TransactionPage(userId: userId,),
     // FoodmenuScreen(),
     FoodMenuPage(),
     ProfileScreen(),
@@ -400,9 +400,10 @@ class MyImageCarousel extends StatelessWidget {
 
 
 class HomePageContent extends StatelessWidget {
+  final String userId; // Add this parameter
   final String userName; // Add this parameter
 
-  HomePageContent({required this.userName}); // Constructor
+  HomePageContent({required this.userName,required this.userId}); // Constructor
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -428,7 +429,7 @@ class HomePageContent extends StatelessWidget {
                   onTap: () {
                        Navigator.of(context).push(
                    MaterialPageRoute(
-                            builder: (context) => AvailableRoomsPage(),
+                            builder: (context) => AvailableRoomsPage(userId: userId,userName: userName,),
                     ),);
                     // Handle the button tap for Room Service
                   },
@@ -444,7 +445,7 @@ class HomePageContent extends StatelessWidget {
                   onTap: () {
                      Navigator.of(context).push(
                    MaterialPageRoute(
-                            builder: (context) => AvailableRoomsPage(),
+                            builder: (context) => AvailableRoomsPage(userId: userId,userName: userName,),
                     ),);
                     // Handle the button tap for Restaurant Menu
                   },
@@ -479,7 +480,7 @@ class HomePageContent extends StatelessWidget {
                   onTap: () {
                   Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => TransactionPage(),
+          builder: (context) => TransactionPage(userId: userId,),
         ),);
                     // Handle the button tap for Local Offer
                   },
@@ -496,7 +497,7 @@ class HomePageContent extends StatelessWidget {
                     // Handle the button tap for Local Parking
                      Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => TransactionPage(),
+          builder: (context) => TransactionPage(userId: userId,),
         ),
       );
                   },

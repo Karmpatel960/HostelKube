@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 class AddRoomPage extends StatefulWidget {
   @override
   _AddRoomPageState createState() => _AddRoomPageState();
@@ -25,6 +26,7 @@ void _addRoomToFirestore() async {
       'pricePerBed': double.parse(pricePerBedController.text),
       'createdBy': user.uid,
       'createdAt': FieldValue.serverTimestamp(),
+      'users': [],
     };
 
     // Check if a room with the same room number already exists
@@ -41,7 +43,16 @@ void _addRoomToFirestore() async {
     }
 
     try {
-      await FirebaseFirestore.instance.collection('rooms').add(roomData);
+      final roomRef = await FirebaseFirestore.instance.collection('rooms').add(roomData);
+
+      // Get the ID of the newly added room
+      final roomId = roomRef.id;
+
+      // Add the room ID to the room data
+      roomData['roomId'] = roomId;
+
+      // Update the room document with the room ID
+      await roomRef.update({'roomId': roomId});
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Room added to Firestore')),
       );
@@ -56,6 +67,7 @@ void _addRoomToFirestore() async {
     }
   }
 }
+
 
 
 

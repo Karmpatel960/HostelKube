@@ -61,18 +61,22 @@ class _SignInScreenState extends State<SignInScreen> {
 
         if (userRole == 'admin') {
           // Redirect to the admin page
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => AdminHomePage(userId: userId),
-            ),
-          );
+          Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(
+    builder: (context) => AdminHomePage(userId: userId),
+  ),
+);
+
         } else {
           // Redirect to the user/home page
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => HomeScreen(userId: userId),
-            ),
-          );
+          Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(
+    builder: (context) => HomePage(userId: userId),
+  ),
+);
+
         }
       }
     } else {
