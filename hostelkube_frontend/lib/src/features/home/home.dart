@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hostelkube_frontend/src/features/home/payment/payment.dart';
 import 'transactions/transactions.dart';
 import 'profile/profile.dart';
 import 'foodmenu/foodmenu.dart';
@@ -445,7 +446,7 @@ class HomePageContent extends StatelessWidget {
                   onTap: () {
                      Navigator.of(context).push(
                    MaterialPageRoute(
-                            builder: (context) => AvailableRoomsPage(userId: userId,userName: userName,),
+                            builder: (context) => LightBillPaymentPage(userId: userId,userName: userName,),
                     ),);
                     // Handle the button tap for Restaurant Menu
                   },

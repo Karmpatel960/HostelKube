@@ -77,13 +77,14 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
       // Get the roomId of the selected room
       final roomId = room['roomId'];
 
-      // Add the user to the room's user list
+      // Subtract 1 from vacant beds and add 1 to filled beds
       final roomRef = FirebaseFirestore.instance.collection('rooms').doc(roomId);
-     final updatedCapacity = room['capacity'] - 1;
-        roomRef.update({
-           'capacity': updatedCapacity,
-          'users': FieldValue.arrayUnion([widget.userId]),
-       });
+      final filledBeds = room['filledBeds'] + 1;
+
+      roomRef.update({
+        'filledBeds': filledBeds,
+        'users': FieldValue.arrayUnion([widget.userId]),
+      });
 
       final transactionId = response.paymentId;
 
@@ -101,14 +102,13 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
       // Save payment data to Firestore
       await FirebaseFirestore.instance.collection('bookings').add(paymentData);
 
-      // ignore: use_build_context_synchronously
-     Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => SuccessfulBookingPage(transactionId: transactionId ?? 'defaultTransactionId'),
-  ),
-);
-
+      // Navigate to the successful booking page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SuccessfulBookingPage(transactionId: transactionId ?? 'defaultTransactionId'),
+        ),
+      );
 
       // Rest of your code...
     } else {

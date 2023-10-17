@@ -25,6 +25,7 @@ void _addRoomToFirestore() async {
       'description': descriptionController.text,
       'pricePerBed': double.parse(pricePerBedController.text),
       'createdBy': user.uid,
+      'filledBeds': 0,
       'createdAt': FieldValue.serverTimestamp(),
       'users': [],
     };

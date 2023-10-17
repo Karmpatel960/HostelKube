@@ -32,9 +32,17 @@ class RoomList extends StatelessWidget {
             final room = rooms[index].data() as Map<String, dynamic>;
             return ListTile(
               title: Text('Room Number: ${room['roomNumber']}'),
-              subtitle: Text('Capacity: ${room['capacity']}'),
-              trailing: Text('Price per Bed: \₹${room['pricePerBed']}'),
-              // You can add more room details to be displayed here
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Capacity: ${room['capacity']}'),
+                  Text('Filled Beds: ${room['filledBeds']}'), // Display filledBeds
+                  Text('Price per Bed: \₹${room['pricePerBed']}'),
+                  // You can add more room details to be displayed here
+                ],
+              ),
+              trailing: Icon(Icons.arrow_forward),
+              // You can add onTap logic to navigate to a detailed room view
             );
           },
         );

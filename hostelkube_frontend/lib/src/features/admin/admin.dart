@@ -72,33 +72,36 @@ class _AHomeScreenState extends State<AHomeScreen> {
   void initState() {
     super.initState();
     // Fetch the allocated rooms when the widget initializes
-    fetchAllocatedRooms().then((rooms) {
+    fetchAllocatedRooms(widget.userId).then((rooms) {
       setState(() {
         allocatedRooms = rooms;
       });
     });
   }
 
-  Future<List<RoomData>> fetchAllocatedRooms() async {
-    try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('rooms')
-          .where('users', arrayContains: widget.userId)
-          .get();
+Future<List<RoomData>> fetchAllocatedRooms(String userId) async {
+  try {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('rooms')
+        .where('createdBy', isEqualTo: userId) // Filter by createdBy
+        .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        final allocatedRooms = querySnapshot.docs
-            .map((doc) => RoomData.fromSnapshot(doc))
-            .toList();
-        return allocatedRooms;
-      } else {
-        return [];
-      }
-    } catch (error) {
-      // Handle the error (e.g., logging, showing an error message)
-      throw error;
+    if (querySnapshot.docs.isNotEmpty) {
+      final allocatedRooms = querySnapshot.docs
+          .where((doc) => (doc.data() as Map)['users'] != null && (doc.data() as Map)['users'].isNotEmpty)
+          .map((doc) => RoomData.fromSnapshot(doc))
+          .toList();
+      return allocatedRooms;
+    } else {
+      return [];
     }
+  } catch (error) {
+    // Handle the error (e.g., logging, showing an error message)
+    throw error;
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
