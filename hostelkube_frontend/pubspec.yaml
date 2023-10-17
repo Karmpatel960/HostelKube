@@ -28,6 +28,7 @@ dependencies:
   pdf: any
   path_provider: any
   open_file: any
+  razorpay_web: ^1.4.2
 
 dev_dependencies:
   flutter_test:
