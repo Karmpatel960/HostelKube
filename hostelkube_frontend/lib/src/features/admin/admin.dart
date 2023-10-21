@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import './adminep.dart';
 import './room.dart';
 import 'RoomList.dart';
+import './foodmenu.dart';
 import 'package:hostelkube_frontend/src/features/features.dart';
 import 'package:hostelkube_frontend/src/models/room.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import './AdminIssue.dart';
 
 class AdminHomePage extends StatefulWidget {
   final String userId; // User ID passed to this screen
@@ -18,43 +20,58 @@ class AdminHomePage extends StatefulWidget {
 class _AdminHomePageState extends State<AdminHomePage> {
   int _currentIndex = 0;
 
+List<Widget> _children = [];
 
-
+  @override
+  void initState() {
+    super.initState();
+    _children = [
+      AHomeScreen(userId: widget.userId),
+      DashboardScreen(),
+      AProfileScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _children = [
-  AHomeScreen(userId: widget.userId), // Use AHomeScreen as the initial screen
-  DashboardScreen(), // Dashboard screen
-  AProfileScreen(), // Profile screen
-];
-    return Scaffold(
-      body: _children[_currentIndex], // Use the selected screen from _children list
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index; // Update the selected screen index
-          });
-        },
+    return WillPopScope(
+      onWillPop: () async {
+        if (_currentIndex == 0) {
+          // If the current screen is the home screen (index 0),
+          // prevent going back by returning false.
+          return false;
+        }
+        return true; // Allow back navigation for other screens.
+      },
+      child: Scaffold(
+        body: _children[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          items: <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
+          onTap: (int index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+        ),
       ),
     );
   }
 }
+
 
 class AHomeScreen extends StatefulWidget {
   final String userId;
@@ -141,12 +158,12 @@ Future<List<RoomData>> fetchAllocatedRooms(String userId) async {
                 },
               ),
               ClickableBox(
-                text: 'Add Student',
+                text: 'Manage Issues',
                 icon: Icons.person,
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => AddStudentPage(),
+                      builder: (context) => ManageIssuePage(),
                     ),
                   );
                 },
@@ -158,12 +175,12 @@ Future<List<RoomData>> fetchAllocatedRooms(String userId) async {
             context,
             [
               ClickableBox(
-                text: 'Add Furniture',
-                icon: Icons.weekend,
+                text: 'Add Food Menu',
+                icon: Icons.food_bank,
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => AddFurniturePage(),
+                      builder: (context) => AdminWeekMenuPage(),
                     ),
                   );
                 },

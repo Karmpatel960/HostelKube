@@ -1,89 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:hostelkube_frontend/src/models/issue.dart';
 
 class Issue {
+  final String userId;
+  final String roomId;
   final String title;
   final String description;
-  bool isSolved;
+  final String status;
 
-  Issue(this.title, this.description, {this.isSolved = false});
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hostel Issues',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: IssuePage(),
-    );
-  }
+  Issue(this.userId, this.roomId, this.title, this.description, this.status);
 }
 
 class IssuePage extends StatefulWidget {
+
+  final String userId;
+
+  IssuePage({
+    required this.userId,
+  });
   @override
   _IssuePageState createState() => _IssuePageState();
 }
 
 class _IssuePageState extends State<IssuePage> {
-  DatabaseReference _database = FirebaseDatabase.instance.reference();
-  TextEditingController titleController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
 
-  List<Issue> issues = [];
-
-  void submitIssue() {
-    final title = titleController.text;
-    final description = descriptionController.text;
-
-    if (title.isEmpty || description.isEmpty) {
-      return;
-    }
-
-    final newIssue = Issue(title, description);
-
-    // Push the new issue to Firebase Database
-    _database.push().set({
-      'title': newIssue.title,
-      'description': newIssue.description,
-      'isSolved': newIssue.isSolved,
-    });
-
-    setState(() {
-      issues.add(newIssue);
-      titleController.clear();
-      descriptionController.clear();
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize Firebase Database reference
-    DatabaseReference databaseRef =
-        FirebaseDatabase.instance.reference().child('issues'); // Use your database node name
-
-    // Listen for child additions
-    // ...
-
-// Listen for child additions
-databaseRef.onChildAdded.listen((event) {
-  final data = event.snapshot.value as Map<String, dynamic>?; // Cast data to Map
-
-  if (data != null) {
-    final issue = Issue(
-      data['title'] ?? '',
-      data['description'] ?? '',
-      isSolved: data['isSolved'] ?? false,
-    );
-    setState(() {
-      issues.add(issue);
-    });
-  }
-});
-  }
+  CollectionReference issuesCollection = FirebaseFirestore.instance.collection('issues');
 
   @override
   Widget build(BuildContext context) {
@@ -118,25 +62,45 @@ databaseRef.onChildAdded.listen((event) {
             ),
             SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                itemCount: issues.length,
-                itemBuilder: (ctx, index) {
-                  return Card(
-                    elevation: 3,
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      title: Text(issues[index].title),
-                      subtitle: Text(issues[index].description),
-                      trailing: Checkbox(
-                        value: issues[index].isSolved,
-                        onChanged: (newValue) {
-                          setState(() {
-                            issues[index].isSolved = newValue ?? false;
-                          });
-                        },
-                      ),
-                    ),
-                  );
+              child: StreamBuilder<QuerySnapshot>(
+                stream: issuesCollection.where('userId', isEqualTo: widget.userId).snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return CircularProgressIndicator();
+                  }
+final issues = snapshot.data!.docs.map((doc) {
+  final data = doc.data() as Map<String, dynamic>;
+  return Issue(
+    data['userId'],
+    data['roomId'],
+    data['title'],
+    data['description'],
+    data['status'],
+  );
+}).toList();
+
+
+            return issues.isNotEmpty
+  ? ListView.builder(
+      itemCount: issues.length,
+      itemBuilder: (ctx, index) {
+        final issue = issues[index];
+        return Card(
+          elevation: 3,
+          margin: EdgeInsets.symmetric(vertical: 8),
+          child: ListTile(
+            title: Text(issue.title),
+            subtitle: Text(issue.description),
+            trailing: Text('Status : '+ issue.status),
+          ),
+        );
+      },
+    )
+  : Center(
+      child: Text('No issues found'),
+    );
+
+
                 },
               ),
             ),
@@ -145,5 +109,58 @@ databaseRef.onChildAdded.listen((event) {
       ),
     );
   }
+
+void submitIssue() async {
+  final title = titleController.text;
+  final description = descriptionController.text;
+
+  if (title.isEmpty || description.isEmpty) {
+    return;
+  }
+
+  try {
+    // Query the rooms collection to find the user's room
+    final roomsSnapshot = await FirebaseFirestore.instance.collection('rooms')
+        .where('users', arrayContains: widget.userId) // Check if the user is in the 'users' array
+        .get();
+
+    // Check if a room is found for the user
+    if (roomsSnapshot.docs.isNotEmpty) {
+      final userRoomId = roomsSnapshot.docs[0]['roomId']; // Get the room ID
+
+      // Create a new issue document reference
+      final newIssueRef = issuesCollection.doc();
+
+      // Add the new issue to Firestore with the document ID
+      await newIssueRef.set({
+        'complaintId': newIssueRef.id,
+        'userId': widget.userId,
+        'roomId': userRoomId,
+        'title': title,
+        'description': description,
+        'status': 'Open', // Initial status
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Clear the text controllers
+      titleController.clear();
+      descriptionController.clear();
+    } else {
+      // Handle the case where the user is not registered in any room.
+      print('User is not registered in any room.');
+    }
+  } catch (error) {
+    // Handle the error
+    print('Error submitting issue: $error');
+  }
 }
 
+
+
+  // void updateIssueStatus(Issue issue, String newStatus) {
+  //   // Update the status of the issue in Firestore
+  //   issuesCollection.doc(issue.userId).update({
+  //     'status': newStatus,
+  //   });
+  // }
+}

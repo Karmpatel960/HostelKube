@@ -155,12 +155,19 @@ Future<bool> isMonthlyBillGenerated(String roomId, DateTime month) async {
 
 
 
-  void saveMonthlyBillToFirestore(MonthlyBillData bill) {
-    // Save the monthly bill data to the "bills" collection in Firestore
-    FirebaseFirestore.instance.collection('bills').add({
-      'roomId': bill.roomId,
-      'totalAmount': bill.totalAmount,
-      'month': bill.month,
-    });
-  }
+void saveMonthlyBillToFirestore(MonthlyBillData bill) async {
+  // Save the monthly bill data to the "bills" collection in Firestore
+  final billRef = await FirebaseFirestore.instance.collection('bills').add({
+    'roomId': bill.roomId,
+    'totalAmount': bill.totalAmount,
+    'month': bill.month,
+    'userIds': bill.userIds,
+  });
+
+  final billId = billRef.id;
+
+  // Update the bill document with the bill ID
+  await FirebaseFirestore.instance.collection('bills').doc(billRef.id).update({'billId': billId});
+}
+
 }

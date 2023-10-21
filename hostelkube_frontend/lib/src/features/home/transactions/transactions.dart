@@ -1,9 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'dart:io';
+import 'package:printing/printing.dart';
+
 class TransactionPage extends StatefulWidget {
   final String userId;
 
@@ -37,38 +36,35 @@ class _TransactionPageState extends State<TransactionPage> {
     }
   }
 
+  Future<void> generateAndOpenReceipt(Map<String, dynamic> booking) async {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.Page(
+        build: (context) {
+          return pw.Center(
+            child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text('Receipt for Booking', style: pw.TextStyle(fontSize: 20)),
+                pw.Text('Room Number: ${booking['roomNumber']}'),
+                pw.Text('Room Pricing: INR ${booking['roomPricing']} Rupees'),
+                pw.Text('User: ${booking['userName']}'),
+                pw.Text('Time: ${booking['timestamp']}'),
+                pw.Text('Transaction ID: ${booking['transactionId']}'),
+              ],
+            ),
+          );
+        },
+      ),
+    );
 
-
-Future<void> generateAndOpenReceipt(Map<String, dynamic> booking) async {
-  final pdf = pw.Document();
-  pdf.addPage(
-    pw.Page(
-      build: (context) {
-        return pw.Center(
-          child: pw.Column(
-            mainAxisAlignment: pw.MainAxisAlignment.center,
-            crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: [
-              pw.Text('Receipt for Booking', style: pw.TextStyle(fontSize: 20)),
-              pw.Text('Room Number: ${booking['roomNumber']}'),
-              pw.Text('Room Pricing: ₹${booking['roomPricing']}'),
-              pw.Text('User: ${booking['user']}'),
-              pw.Text('Transaction ID: ${booking['transactionId']}'),
-            ],
-          ),
-        );
+    await Printing.layoutPdf(
+      onLayout: (format) async {
+        return pdf.save();
       },
-    ),
-  );
-
-  final output = await getApplicationDocumentsDirectory(); // Save in app's documents directory
-  final file = File('${output.path}/receipt.pdf');
-  await file.writeAsBytes(await pdf.save());
-
-  // Open the PDF using the default PDF viewer on the device
-  await OpenFile.open(file.path);
-}
-
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +91,7 @@ Future<void> generateAndOpenReceipt(Map<String, dynamic> booking) async {
                   trailing: TextButton(
                     onPressed: () {
                       // Handle viewing or printing the receipt
-                      // You can call a function similar to printReceipt here.
+                      generateAndOpenReceipt(booking);
                     },
                     child: Text('View Receipt'),
                   ),

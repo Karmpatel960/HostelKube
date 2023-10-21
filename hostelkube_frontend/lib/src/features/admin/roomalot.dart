@@ -20,9 +20,10 @@ class AvailableRoomsPage extends StatefulWidget {
 
 class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
   List<Map<String, dynamic>> availableRooms = [];
-
+    bool userAlreadyBought = false;
   late final Razorpay _razorpay;
   int? selectedRoomIndex;
+   String filter = "All";
 
   @override
   void initState() {
@@ -31,6 +32,7 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    checkUserAlreadyBoughtRoom();
     fetchAvailableRooms();
   }
 
@@ -51,6 +53,18 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
       }
     } catch (error) {
       // Handle the error
+    }
+  }
+
+   Future<void> checkUserAlreadyBoughtRoom() async {
+    final roomsSnapshot = await FirebaseFirestore.instance.collection('rooms')
+        .where('users', arrayContains: widget.userId) // Check if the user is in the 'users' array
+        .get();
+
+    if (roomsSnapshot.docs.isNotEmpty) {
+      setState(() {
+        userAlreadyBought = true;
+      });
     }
   }
 
@@ -147,45 +161,147 @@ class _AvailableRoomsPageState extends State<AvailableRoomsPage> {
     );
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Available Rooms'),
       ),
-      body: ListView.builder(
-        itemCount: availableRooms.length,
-        itemBuilder: (context, index) {
-          final room = availableRooms[index];
+      body: userAlreadyBought
+          ? Center(
+              child: Text('You have already booked a room.'),
+            )
+          : Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    FilterButton("All", setFilter),
+                    FilterButton("Empty", setFilter),
+                    FilterButton("Half-Filled", setFilter),
+                    FilterButton("Fully-Filled", setFilter),
+                  ],
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: availableRooms.length,
+                    itemBuilder: (context, index) {
+                      final room = availableRooms[index];
 
-          return ListTile(
-            title: Text('Room: ${room['roomNumber']}'),
-            subtitle: Text('Capacity: ${room['capacity']} | Price per Bed: \₹${room['pricePerBed']}'),
-            trailing: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  selectedRoomIndex = index;
-                });
-                openPaymentGateway(room);
-              },
-              child: Text('Book'),
+                      String occupancyState;
+                      Color backgroundColor;
+
+                      final filledBeds = room['filledBeds'];
+                      final capacity = room['capacity'];
+
+                      if (filledBeds == 0) {
+                        occupancyState = 'Empty';
+                        backgroundColor = Colors.green;
+                      } else if (filledBeds < capacity) {
+                        occupancyState = 'Half-Filled';
+                        backgroundColor = Colors.yellow;
+                      } else {
+                        occupancyState = 'Fully-Filled';
+                        backgroundColor = Colors.red;
+                      }
+
+                      if (filter == "All" || filter == occupancyState) {
+                        return ListTile(
+                          title: Text('Room: ${room['roomNumber']}'),
+                          subtitle: Text('Capacity: ${room['capacity']} | Price per Bed: \₹${room['pricePerBed']}'),
+                          trailing: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                selectedRoomIndex = index;
+                              });
+                              openPaymentGateway(room);
+                            },
+                            child: Text('Book'),
+                          ),
+                          selected: selectedRoomIndex == index,
+                          tileColor: backgroundColor,
+                        );
+                      } else {
+                        return Container();
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
-            selected: selectedRoomIndex == index,
-          );
-        },
-      ),
     );
   }
+
+  void setFilter(String value) {
+    setState(() {
+      filter = value;
+    });
+  }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       title: Text('Available Rooms'),
+  //     ),
+  //     body: userAlreadyBought
+  //         ? Center(
+  //             child: Text('You have already booked a room.'),
+  //           )
+  //         : ListView.builder(
+  //             itemCount: availableRooms.length,
+  //             itemBuilder: (context, index) {
+  //               final room = availableRooms[index];
+
+  //               return ListTile(
+  //                 title: Text('Room: ${room['roomNumber']}'),
+  //                 subtitle: Text('Capacity: ${room['capacity']} | Price per Bed: \₹${room['pricePerBed']}'),
+  //                 trailing: ElevatedButton(
+  //                   onPressed: () {
+  //                     setState(() {
+  //                       selectedRoomIndex = index;
+  //                     });
+  //                     openPaymentGateway(room);
+  //                   },
+  //                   child: Text('Book'),
+  //                 ),
+  //                 selected: selectedRoomIndex == index,
+  //               );
+  //             },
+  //           ),
+  //   );
+  // }
+
 }
 
+  class FilterButton extends StatelessWidget {
+  final String label;
+  final Function(String) onPressed;
+
+  FilterButton(this.label, this.onPressed);
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        onPressed(label);
+      },
+      child: Text(label),
+    );
+  }
+  }
+
 class SuccessfulBookingPage extends StatelessWidget {
-  final String transactionId; // Add a parameter to accept the booking ID
+  final String transactionId;
 
   SuccessfulBookingPage({required this.transactionId});
 
   @override
   Widget build(BuildContext context) {
-    // Use the bookingId parameter to display information or perform actions related to the booking.
+    Future.delayed(Duration(seconds: 10), () {
+      Navigator.of(context).pop();
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Successful Booking'),
@@ -194,6 +310,12 @@ class SuccessfulBookingPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Icon(
+              Icons.done,  // Use the "done" icon from Icons class
+              size: 100,  // Adjust the size as needed
+              color: Colors.green,  // Set the color of the icon
+            ),
+            SizedBox(height: 20),  // Add some spacing
             Text('Booking ID: $transactionId'),
             // Add other content related to the successful booking
           ],

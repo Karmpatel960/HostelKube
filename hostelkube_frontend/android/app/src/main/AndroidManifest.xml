@@ -25,6 +25,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <queries>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:mimeType="application/pdf" />
+    </intent>
+</queries>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

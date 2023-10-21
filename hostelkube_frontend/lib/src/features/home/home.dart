@@ -2,24 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hostelkube_frontend/src/features/home/payment/payment.dart';
+import 'package:hostelkube_frontend/src/features/home/payment/paymentlist.dart';
 import 'transactions/transactions.dart';
 import 'profile/profile.dart';
 import 'foodmenu/foodmenu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hostelkube_frontend/src/features/features.dart';
+import 'package:intl/intl.dart';
 
 
-class HomeScreen extends StatelessWidget {
+
+class HomeScreen extends StatefulWidget {
   final ThemeMode themeMode;
-  final String userId; // Add userId here
+  final String userId;
 
   const HomeScreen({Key? key, this.themeMode = ThemeMode.light, required this.userId}) : super(key: key);
 
-  // Remove the static method setThemeMode
-  //  static void setThemeMode(ThemeMode themeMode) {
-  //   runApp();
-  // }
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  ThemeMode _themeMode = ThemeMode.light;
 
   @override
   Widget build(BuildContext context) {
@@ -27,39 +31,59 @@ class HomeScreen extends StatelessWidget {
       title: 'Prince Hostel',
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      themeMode: themeMode,
-      home: HomePage(userId: userId), // Pass userId here
+      themeMode: widget.themeMode, // Use the themeMode passed from HomeScreen
+      home: HomePage(userId: widget.userId, themeMode: widget.themeMode, onThemeChanged: _toggleTheme),
     );
+  }
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    });
   }
 }
 
 class HomePage extends StatefulWidget {
   final String userId; // Add userId here
+  final ThemeMode themeMode;
+  final Function() onThemeChanged;
 
-  HomePage({required this.userId}); 
+ HomePage({required this.userId, required this.themeMode, required this.onThemeChanged});
   @override
-  _HomePageState createState() => _HomePageState(userId: userId);
+  _HomePageState createState() => _HomePageState(userId: userId, onThemeChanged: onThemeChanged);
 }
 
 class _HomePageState extends State<HomePage> {
   final String userId; // Add a userId parameter
-
-  _HomePageState({required this.userId});
+final Function() onThemeChanged;
+  _HomePageState({required this.userId, required this.onThemeChanged});
   String userName = '';
+  String roomNumber = 'Not Alloted'; 
+  String checkout = 'Not Alloted'; 
 
   @override
   void initState() {
     super.initState();
     fetchUserNameFromFirebase();
+    
   }
 
   void fetchUserNameFromFirebase() async {
   // Replace 'userId' with the actual user ID of the logged-in user
   final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
   final name = await fetchUserName(userId);
-
+  final numb = await fetchRoomNumberFromRoomsCollection(userId);
+  final cdate = await getCheckOutDate(userId);
   setState(() {
     userName = name;
+    roomNumber = numb;
+    if (cdate != null) {
+      // Format the DateTime into a string
+      final formattedDate = DateFormat('dd/MM/yyyy').format(cdate);
+      checkout = '$formattedDate';
+    } else {
+      checkout = 'Not Alloted';
+    }
   });
 }
 
@@ -82,6 +106,41 @@ Future<String> fetchUserName(String userId) async {
   }
 }
 
+Future<String> fetchRoomNumberFromRoomsCollection(String userId) async {
+  try {
+    final roomsQuery = await FirebaseFirestore.instance.collection('rooms')
+      .where('users', arrayContains: userId) // Check if the user is in the 'users' array
+      .get();
+
+    if (!roomsQuery.docs.isEmpty) {
+      final roomData = roomsQuery.docs[0].data() as Map<String, dynamic>;
+      final fetchedRoomNumber = roomData['roomNumber'];
+      return fetchedRoomNumber;
+    }
+     return ''; 
+  } catch (error) {
+    print('Error fetching room number: $error');
+     return ''; 
+  }
+}
+
+Future<DateTime?> getCheckOutDate(String userId) async {
+  // Query the Firestore collection to find the booking document by userId
+  final QuerySnapshot bookingDocs = await FirebaseFirestore.instance
+      .collection('bookings')
+      .where('userId', isEqualTo: userId)
+      .get();
+
+  if (bookingDocs.docs.isNotEmpty) {
+    final bookingData = bookingDocs.docs.first.data() as Map<String, dynamic>;
+    final bookingDate = bookingData['timestamp'] as Timestamp;
+    return bookingDate.toDate().add(Duration(days: 365));
+  } else {
+    return null; // No booking found for the user
+  }
+}
+
+
 
   int _currentIndex = 0; // Define _currentIndex as an instance variable
 
@@ -92,20 +151,18 @@ Future<String> fetchUserName(String userId) async {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
-    HomePageContent(userName: userName,userId: userId,),
+    HomePageContent(userName: userName,userId: userId,roomNumber: roomNumber,checkout:checkout),
     TransactionPage(userId: userId,),
     // FoodmenuScreen(),
-    FoodMenuPage(),
+    UserWeekMenuPage(),
     ProfileScreen(),
   ];
-    return Scaffold(
-      
+
+  var themeMode = widget.themeMode;
+        return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(
-          'Prince Hostel',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        title: Text('Prince Hostel', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: Icon(Icons.notifications),
@@ -121,11 +178,7 @@ Future<String> fetchUserName(String userId) async {
           },
         ),
       ),
-      body: IndexedStack(
-  index: _currentIndex,
-  children: _pages,
-),
-
+      body: _pages[_currentIndex],
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -145,7 +198,7 @@ Future<String> fetchUserName(String userId) async {
                 children: [
                   Image.asset(
                     'assets/name.png', // Replace with the path to your logo image
-                    height: 80, // Adjust the height as needed
+                    height: 80,
                   ),
                   SizedBox(height: 10),
                   Text(
@@ -158,10 +211,16 @@ Future<String> fetchUserName(String userId) async {
                 ],
               ),
             ),
+            // Drawer items as you described
+     
             ListTile(
               leading: Icon(Icons.attach_money),
               title: Text('Rooms'),
               onTap: () {
+                  Navigator.of(context).push(
+                   MaterialPageRoute(
+                            builder: (context) => AvailableRoomsPage(userId: userId,userName: userName,),
+                    ),);
                 // Add code to handle fee payment here
               },
             ),
@@ -169,6 +228,10 @@ Future<String> fetchUserName(String userId) async {
               leading: Icon(Icons.lightbulb_outline),
               title: Text('Light Bill Payment'),
               onTap: () {
+                 Navigator.of(context).push(
+                   MaterialPageRoute(
+                            builder: (context) => LightBillPaymentPage(userId: userId,userName: userName,),
+                    ),);
                 // Add code to handle light bill payment here
               },
             ),
@@ -177,6 +240,10 @@ Future<String> fetchUserName(String userId) async {
               title: Text('Bill Receipt'),
               onTap: () {
                 // Add code to handle bill receipt here
+                 Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => TransactionPage(userId: userId,),
+        ),);
               },
             ),
             ListTile(
@@ -184,6 +251,11 @@ Future<String> fetchUserName(String userId) async {
               title: Text('Any Issue'),
               onTap: () {
                 // Add code to handle any issue here
+                Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => IssuePage(userId: userId,),
+        ),
+      );
               },
             ),
             ListTile(
@@ -192,7 +264,7 @@ Future<String> fetchUserName(String userId) async {
               onTap: () {
                      Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => AdminHomePage(userId: userId,),
+          builder: (context) => AboutScreen(),
         ),
       );
                 // Add code to navigate to the "About Us" screen here
@@ -202,53 +274,37 @@ Future<String> fetchUserName(String userId) async {
               leading: Icon(Icons.brightness_6), // Icon for theme change
               title: Text('Dark Theme'), // Theme change option
               trailing: Switch(
-                value: Theme.of(context).brightness == Brightness.dark,
+                value: themeMode == ThemeMode.dark,
                 onChanged: (value) {
-                  // Toggle the theme when the switch is changed
-                  ThemeMode newThemeMode = value ? ThemeMode.dark : ThemeMode.light;
-                  // HomeScreen.setThemeMode(newThemeMode);
-                },
+                onThemeChanged();
+              },
               ),
             ),
           ],
         ),
       ),
-    
-    bottomNavigationBar: BottomNavigationBar(
-    type: BottomNavigationBarType.fixed,
-    backgroundColor: Theme.of(context).bottomAppBarColor,
-    selectedItemColor: Color.fromARGB(255, 51, 163, 255),
-    unselectedItemColor: Theme.of(context).brightness == Brightness.dark
-  ? Colors.white // Set to white when the theme is dark (black)
-  : Colors.black, // Set to black when the theme is light (white)
-    selectedFontSize: 12,
-    unselectedFontSize: 9,
-
-    currentIndex: _currentIndex,
-    onTap: (index) {
-      setState(() {
-        _currentIndex = index;
-      });
-    },
-    items: [
-      BottomNavigationBarItem(
-        icon: Icon(Icons.home),
-        label: 'Home',
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Theme.of(context).bottomAppBarColor,
+        selectedItemColor: Color.fromARGB(255, 51, 163, 255),
+        unselectedItemColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black,
+        selectedFontSize: 12,
+        unselectedFontSize: 9,
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Receipt'),
+          BottomNavigationBarItem(icon: Icon(Icons.food_bank), label: 'Food'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.receipt_long),
-        label: 'Receipt',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.food_bank),
-        label: 'Food',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.person),
-        label: 'Profile',
-      ),
-    ],
-  ),
     );
   }
 
@@ -274,10 +330,15 @@ Future<String> fetchUserName(String userId) async {
 }
 
 class TopBox extends StatelessWidget {
+  final String userName;
+  final String roomNumber;
+  final String checkOutDate; // Add this parameter
 
-  final String userName; // Add this parameter
-
-  TopBox({required this.userName}); // Constructor
+  TopBox({
+    required this.userName,
+    required this.roomNumber,
+    required this.checkOutDate,
+  }); // Constructor
 
   @override
   Widget build(BuildContext context) {
@@ -317,7 +378,7 @@ class TopBox extends StatelessWidget {
                   ),
                   SizedBox(width: 15),
                   Text(
-                    'Room No: Not Alloted',
+                    'Room No: $roomNumber',
                     style: TextStyle(color: Colors.white),
                   ),
                 ],
@@ -332,12 +393,12 @@ class TopBox extends StatelessWidget {
                   ),
                   SizedBox(width: 15),
                   Text(
-                    'Check-out: Not Alloted',
+                    'Check-out: $checkOutDate', // Display the Check-out date
                     style: TextStyle(color: Colors.white),
                   ),
                 ],
               ),
-               Row(
+              Row(
                 children: [
                   SizedBox(width: 15),
                   Text(
@@ -365,6 +426,7 @@ class TopBox extends StatelessWidget {
     );
   }
 }
+
 
 
 
@@ -403,15 +465,17 @@ class MyImageCarousel extends StatelessWidget {
 class HomePageContent extends StatelessWidget {
   final String userId; // Add this parameter
   final String userName; // Add this parameter
+  final String roomNumber;
+  final  String checkout;
 
-  HomePageContent({required this.userName,required this.userId}); // Constructor
+  HomePageContent({required this.userName,required this.userId,required this.roomNumber,required this.checkout}); // Constructor
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TopBox(userName: userName),
+          TopBox(userName: userName,roomNumber: roomNumber,checkOutDate: checkout),
           SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -460,6 +524,10 @@ class HomePageContent extends StatelessWidget {
                 flex: 1,
                 child: GestureDetector(
                   onTap: () {
+                       Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => UserWeekMenuPage(),
+        ),);
                     
                     // Handle the button tap for Local Laundry Service
                   },
@@ -498,7 +566,7 @@ class HomePageContent extends StatelessWidget {
                     // Handle the button tap for Local Parking
                      Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => TransactionPage(userId: userId,),
+          builder: (context) => PaidBillsPage(userId: userId,),
         ),
       );
                   },
@@ -515,7 +583,7 @@ class HomePageContent extends StatelessWidget {
       // Navigate to the AdminPage when the button is tapped
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => IssuePage(),
+          builder: (context) => IssuePage(userId: userId,),
         ),
       );
     },
@@ -624,6 +692,46 @@ class ServiceContainer extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class AboutScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('About Us'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Welcome to Our App!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'About Us:',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                'We are a dedicated team of developers who built this app to make your life easier. Thank you for using our app!',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -15,6 +15,9 @@ class _SignInScreenState extends State<SignInScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  ThemeMode themeMode = ThemeMode.light; // Initialize with a default theme
+void Function() onThemeChanged = () {}; // Initialize with an empty function
+
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -61,21 +64,22 @@ class _SignInScreenState extends State<SignInScreen> {
 
         if (userRole == 'admin') {
           // Redirect to the admin page
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
   context,
   MaterialPageRoute(
-    builder: (context) => AdminHomePage(userId: userId),
-  ),
+    builder: (context) => AdminHomePage(userId: userId)
+  ),(route) => false,
 );
 
         } else {
           // Redirect to the user/home page
-          Navigator.pushReplacement(
+         Navigator.pushReplacement(
   context,
   MaterialPageRoute(
-    builder: (context) => HomePage(userId: userId),
+    builder: (context) => HomePage(userId: userId, themeMode: themeMode, onThemeChanged: onThemeChanged),
   ),
 );
+
 
         }
       }
