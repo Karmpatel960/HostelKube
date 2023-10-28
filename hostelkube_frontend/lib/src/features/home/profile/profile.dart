@@ -14,7 +14,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String email = 'john.doe@example.com';
   String phoneNumber = '123-456-7890';
   String address = '123 Main St, City, Country';
-  String roomNumber = 'Not Alloted'; // Initialize with a default room number
+  String roomNumber = 'Not Alloted';
   String emergencyContact = '987-654-3210';
 
   final nameController = TextEditingController();
@@ -40,21 +40,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         if (userDoc.exists) {
           final userData = userDoc.data() as Map<String, dynamic>;
-          final fetchedName = userData['name'];
-          final fetchedEmail = userData['email'];
-          final fetchedPhoneNumber = userData['phoneNumber'];
-          final fetchedAddress = userData['address'];
-          final fetchedEmergencyContact = userData['emergencyContact'];
-
           setState(() {
-            userName = fetchedName ?? '';
-            email = fetchedEmail ?? '';
-            phoneNumber = fetchedPhoneNumber ?? '';
-            address = fetchedAddress ?? '';
-            emergencyContact = fetchedEmergencyContact ?? '';
+            userName = userData['name'] ?? '';
+            email = userData['email'] ?? '';
+            phoneNumber = userData['phoneNumber'] ?? '';
+            address = userData['address'] ?? '';
+            emergencyContact = userData['emergencyContact'] ?? '';
           });
 
-          // Fetch the user's room number from the rooms collection
           fetchRoomNumberFromRoomsCollection(uid);
         } else {
           print('User document does not exist');
@@ -72,33 +65,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
-  try {
-    final roomsQuery = await FirebaseFirestore.instance.collection('rooms')
-      .where('users', arrayContains: userId) // Check if the user is in the 'users' array
-      .get();
+  Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
+    try {
+      final roomsQuery = await FirebaseFirestore.instance.collection('rooms')
+        .where('users', arrayContains: userId)
+        .get();
 
-    if (!roomsQuery.docs.isEmpty) {
-      final roomData = roomsQuery.docs[0].data() as Map<String, dynamic>;
-      final fetchedRoomNumber = roomData['roomNumber'];
-      setState(() {
-        roomNumber = fetchedRoomNumber ?? '';
-      });
+      if (!roomsQuery.docs.isEmpty) {
+        final roomData = roomsQuery.docs[0].data() as Map<String, dynamic>;
+        setState(() {
+          roomNumber = roomData['roomNumber'] ?? '';
+        });
+      }
+    } catch (error) {
+      print('Error fetching room number: $error');
     }
-  } catch (error) {
-    print('Error fetching room number: $error');
   }
-}
-
 
   void toggleEdit() {
-    setState(() {
-      isEditing = !isEditing;
-      if (!isEditing) {
+  setState(() {
+    isEditing = !isEditing;
+    if (!isEditing) {
+      if (validateFields()) {
         saveUserDataToFirestore();
+      } else {
+        // Show a snackbar message to inform the user about missing fields.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please fill in all data.'),
+          ),
+        );
       }
-    });
+    }
+  });
+}
+
+bool validateFields() {
+  if (nameController.text.isEmpty ||
+      phoneNumberController.text.isEmpty ||
+      addressController.text.isEmpty ||
+      emergencyContactController.text.isEmpty) {
+    return false;
   }
+  return true;
+}
 
   Future<void> saveUserDataToFirestore() async {
     try {
@@ -120,7 +130,6 @@ Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
   void logout() async {
     try {
       await FirebaseAuth.instance.signOut();
-
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -155,6 +164,9 @@ Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
               if (isEditing)
                 TextFormField(
                   controller: nameController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your name',
+                  ),
                 )
               else
                 Text(
@@ -168,10 +180,10 @@ Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-                Text(
-                  email,
-                  style: TextStyle(fontSize: 18.0),
-                ),
+              Text(
+                email,
+                style: TextStyle(fontSize: 18.0),
+              ),
               SizedBox(height: 16.0),
               Text(
                 'Phone Number:',
@@ -183,6 +195,9 @@ Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
               if (isEditing)
                 TextFormField(
                   controller: phoneNumberController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your phone number',
+                  ),
                 )
               else
                 Text(
@@ -200,6 +215,9 @@ Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
               if (isEditing)
                 TextFormField(
                   controller: addressController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your address',
+                  ),
                 )
               else
                 Text(
@@ -214,10 +232,10 @@ Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-                Text(
-                  roomNumber,
-                  style: TextStyle(fontSize: 18.0),
-                ),
+              Text(
+                roomNumber,
+                style: TextStyle(fontSize: 18.0),
+              ),
               SizedBox(height: 16.0),
               Text(
                 'Emergency Contact:',
@@ -229,6 +247,9 @@ Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
               if (isEditing)
                 TextFormField(
                   controller: emergencyContactController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your emergency contact',
+                  ),
                 )
               else
                 Text(

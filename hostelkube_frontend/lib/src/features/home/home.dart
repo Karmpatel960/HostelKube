@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       title: 'Prince Hostel',
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      themeMode: widget.themeMode, // Use the themeMode passed from HomeScreen
+        themeMode: _themeMode, // Use _themeMode here
       home: HomePage(userId: widget.userId, themeMode: widget.themeMode, onThemeChanged: _toggleTheme),
     );
   }
@@ -44,26 +44,37 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomePage extends StatefulWidget {
-  final String userId; // Add userId here
+  final String userId;
   final ThemeMode themeMode;
   final Function() onThemeChanged;
 
- HomePage({required this.userId, required this.themeMode, required this.onThemeChanged});
+  HomePage({required this.userId, required this.themeMode, required this.onThemeChanged});
+
   @override
-  _HomePageState createState() => _HomePageState(userId: userId, onThemeChanged: onThemeChanged);
+  _HomePageState createState() => _HomePageState(userId: userId, themeMode: themeMode, onThemeChanged: onThemeChanged);
 }
 
 class _HomePageState extends State<HomePage> {
-  final String userId; // Add a userId parameter
-final Function() onThemeChanged;
-  _HomePageState({required this.userId, required this.onThemeChanged});
+  final String userId;
+  final ThemeMode themeMode;
+  final Function() onThemeChanged;
+
+  ThemeMode _themeMode = ThemeMode.light;
+
+  _HomePageState({required this.userId, required this.themeMode, required this.onThemeChanged}) {
+    _themeMode = themeMode;
+  }
+
   String userName = '';
   String roomNumber = 'Not Alloted'; 
   String checkout = 'Not Alloted'; 
+  bool _isDarkTheme = false;
 
   @override
   void initState() {
     super.initState();
+        _themeMode = widget.themeMode;
+        _isDarkTheme = _themeMode == ThemeMode.dark;
     fetchUserNameFromFirebase();
     
   }
@@ -87,6 +98,14 @@ final Function() onThemeChanged;
   });
 }
 
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+      widget.onThemeChanged();
+      _isDarkTheme = !_isDarkTheme; // Toggle _isDarkTheme state
+    });
+  }
+  
 Future<String> fetchUserName(String userId) async {
   try {
     final firestore = FirebaseFirestore.instance;
@@ -158,7 +177,6 @@ Future<DateTime?> getCheckOutDate(String userId) async {
     ProfileScreen(),
   ];
 
-  var themeMode = widget.themeMode;
         return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -274,10 +292,11 @@ Future<DateTime?> getCheckOutDate(String userId) async {
               leading: Icon(Icons.brightness_6), // Icon for theme change
               title: Text('Dark Theme'), // Theme change option
               trailing: Switch(
-                value: themeMode == ThemeMode.dark,
-                onChanged: (value) {
-                onThemeChanged();
-              },
+                 value: _isDarkTheme, // Use _isDarkTheme to control the Switch state
+          onChanged: (value) {
+            print('Switch value changed: $value');
+            _toggleTheme(); // Toggle the theme when the switch changes
+          },
               ),
             ),
           ],

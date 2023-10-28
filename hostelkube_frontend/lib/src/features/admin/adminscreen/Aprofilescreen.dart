@@ -10,12 +10,24 @@ class AProfileScreen extends StatefulWidget {
 }
 
 class _AProfileScreenState extends State<AProfileScreen> {
-  String userName = ''; // Initialize with an empty string
+  String userName = '';
+  String email = 'john.doe@example.com';
+  String phoneNumber = '123-456-7890';
+  String address = '123 Main St, City, Country';
+  String roomNumber = 'Not Alloted';
+  String emergencyContact = '987-654-3210';
+
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final phoneNumberController = TextEditingController();
+  final addressController = TextEditingController();
+  final emergencyContactController = TextEditingController();
+
+  bool isEditing = false;
 
   @override
   void initState() {
     super.initState();
-    // Fetch and set the user's data from Firestore
     fetchUserDataFromFirestore();
   }
 
@@ -29,28 +41,110 @@ class _AProfileScreenState extends State<AProfileScreen> {
         if (userDoc.exists) {
           final userData = userDoc.data() as Map<String, dynamic>;
           final fetchedName = userData['name'];
-          print('Fetched Name: $fetchedName'); // Add this line for debugging
+          final fetchedEmail = userData['email'];
+          final fetchedPhoneNumber = userData['phoneNumber'];
+          final fetchedAddress = userData['address'];
+          final fetchedEmergencyContact = userData['emergencyContact'];
+
           setState(() {
-            userName = fetchedName ?? ''; // Update userName
+            userName = fetchedName ?? '';
+            email = fetchedEmail ?? '';
+            phoneNumber = fetchedPhoneNumber ?? '';
+            address = fetchedAddress ?? '';
+            emergencyContact = fetchedEmergencyContact ?? '';
           });
+
+          // Fetch the user's room number from the rooms collection
+          fetchRoomNumberFromRoomsCollection(uid);
         } else {
           print('User document does not exist');
         }
       } else {
         print('User is not signed in');
       }
+
+      nameController.text = userName;
+      phoneNumberController.text = phoneNumber;
+      addressController.text = address;
+      emergencyContactController.text = emergencyContact;
     } catch (error) {
       print('Error fetching user data: $error');
+    }
+  }
+
+Future<void> fetchRoomNumberFromRoomsCollection(String userId) async {
+  try {
+    final roomsQuery = await FirebaseFirestore.instance.collection('rooms')
+      .where('users', arrayContains: userId) // Check if the user is in the 'users' array
+      .get();
+
+    if (!roomsQuery.docs.isEmpty) {
+      final roomData = roomsQuery.docs[0].data() as Map<String, dynamic>;
+      final fetchedRoomNumber = roomData['roomNumber'];
+      setState(() {
+        roomNumber = fetchedRoomNumber ?? '';
+      });
+    }
+  } catch (error) {
+    print('Error fetching room number: $error');
+  }
+}
+
+
+  void toggleEdit() {
+  setState(() {
+    isEditing = !isEditing;
+    if (!isEditing) {
+      if (validateFields()) {
+        saveUserDataToFirestore();
+      } else {
+        // Show a snackbar message to inform the user about missing fields.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please fill in all data.'),
+          ),
+        );
+      }
+    }
+  });
+}
+
+bool validateFields() {
+  if (nameController.text.isEmpty ||
+      phoneNumberController.text.isEmpty ||
+      addressController.text.isEmpty ||
+      emergencyContactController.text.isEmpty) {
+    return false;
+  }
+  return true;
+}
+
+
+  Future<void> saveUserDataToFirestore() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final uid = user.uid;
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'name': nameController.text,
+          'phoneNumber': phoneNumberController.text,
+          'address': addressController.text,
+          'emergencyContact': emergencyContactController.text,
+        });
+      }
+    } catch (error) {
+      print('Error saving user data: $error');
     }
   }
 
   void logout() async {
     try {
       await FirebaseAuth.instance.signOut();
-        final prefs = await SharedPreferences.getInstance();
+
+      final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => SignInScreen(), // Replace with your sign-in screen
+        builder: (context) => SignInScreen(),
       ));
     } catch (error) {
       print('Error logging out: $error');
@@ -60,23 +154,6 @@ class _AProfileScreenState extends State<AProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Profile'),
-         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              // Handle notifications or alerts
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              // Handle settings
-            },
-          ),
-        ], // Set the title here
-      ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -85,7 +162,7 @@ class _AProfileScreenState extends State<AProfileScreen> {
               SizedBox(height: 20),
               CircleAvatar(
                 radius: 60,
-                backgroundImage: AssetImage('./profile_image.jpg'),
+                backgroundImage: AssetImage('profile_image.jpg'),
               ),
               SizedBox(height: 20),
               Text(
@@ -95,11 +172,15 @@ class _AProfileScreenState extends State<AProfileScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 20),
-              Text(
-                userName,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+              if (isEditing)
+                TextFormField(
+                  controller: nameController,
+                )
+              else
+                Text(
+                  userName,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
               Text(
                 'Email:',
                 style: TextStyle(
@@ -107,12 +188,10 @@ class _AProfileScreenState extends State<AProfileScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
-                'john.doe@example.com', // Replace with the student's email
-                style: TextStyle(
-                  fontSize: 18.0,
+                Text(
+                  email,
+                  style: TextStyle(fontSize: 18.0),
                 ),
-              ),
               SizedBox(height: 16.0),
               Text(
                 'Phone Number:',
@@ -121,12 +200,15 @@ class _AProfileScreenState extends State<AProfileScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
-                '123-456-7890', // Replace with the student's phone number
-                style: TextStyle(
-                  fontSize: 18.0,
+              if (isEditing)
+                TextFormField(
+                  controller: phoneNumberController,
+                )
+              else
+                Text(
+                  phoneNumber,
+                  style: TextStyle(fontSize: 18.0),
                 ),
-              ),
               SizedBox(height: 16.0),
               Text(
                 'Address:',
@@ -135,15 +217,58 @@ class _AProfileScreenState extends State<AProfileScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              if (isEditing)
+                TextFormField(
+                  controller: addressController,
+                )
+              else
+                Text(
+                  address,
+                  style: TextStyle(fontSize: 18.0),
+                ),
+              SizedBox(height: 16.0),
               Text(
-                '123 Main St, City, Country', // Replace with the student's address
+                'Room Number:',
                 style: TextStyle(
                   fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+                Text(
+                  roomNumber,
+                  style: TextStyle(fontSize: 18.0),
+                ),
+              SizedBox(height: 16.0),
+              Text(
+                'Emergency Contact:',
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (isEditing)
+                TextFormField(
+                  controller: emergencyContactController,
+                )
+              else
+                Text(
+                  emergencyContact,
+                  style: TextStyle(fontSize: 18.0),
+                ),
               SizedBox(height: 32.0),
+              if (isEditing)
+                ElevatedButton(
+                  onPressed: toggleEdit,
+                  child: Text('Save Changes'),
+                )
+              else
+                ElevatedButton(
+                  onPressed: toggleEdit,
+                  child: Text('Edit'),
+                ),
+              SizedBox(height: 16.0),
               ElevatedButton(
-                onPressed: logout, // Call the logout function
+                onPressed: logout,
                 child: Text('Logout'),
               ),
             ],
@@ -153,5 +278,6 @@ class _AProfileScreenState extends State<AProfileScreen> {
     );
   }
 }
+
 
 
