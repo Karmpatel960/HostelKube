@@ -27,7 +27,7 @@ List<Widget> _children = [];
     super.initState();
     _children = [
       AHomeScreen(userId: widget.userId),
-      DashboardScreen(),
+      DashboardScreen(userId: widget.userId),
       AProfileScreen(),
     ];
   }
@@ -221,7 +221,7 @@ Future<List<RoomData>> fetchAllocatedRooms(String userId) async {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => PaymentAnalyticsPage(),
+                      builder: (context) => DashboardScreen(userId: widget.userId),
                     ),
                   );
                 },
@@ -304,113 +304,29 @@ class _ClickableBoxState extends State<ClickableBox> {
   }
 }
 
-// class AddRoomPage extends StatelessWidget {
+// class AddStudentPage extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
 //       appBar: AppBar(
-//         title: Text('Add Room'),
+//         title: Text('Add Student'),
 //       ),
 //       body: Center(
-//         child: Text('Add Room Form Goes Here'),
+//         child: Text('Add Student Form Goes Here'),
 //       ),
 //     );
 //   }
 // }
 
-class AddStudentPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add Student'),
-      ),
-      body: Center(
-        child: Text('Add Student Form Goes Here'),
-      ),
-    );
-  }
-}
-
-class AddFurniturePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add Furniture'),
-      ),
-      body: Center(
-        child: Text('Add Furniture Form Goes Here'),
-      ),
-    );
-  }
-}
-
-// class ShowRoomsPage extends StatelessWidget {
+// class AddFurniturePage extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
 //       appBar: AppBar(
-//         title: Text('Show Existing Rooms'),
+//         title: Text('Add Furniture'),
 //       ),
 //       body: Center(
-//         child: Text('List of Existing Rooms Goes Here'),
-//       ),
-//     );
-//   }
-// }
-
-// class LightBillsPage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Manage Light Bills'),
-//       ),
-//       body: Center(
-//         child: Text('Light Bill Management Goes Here'),
-//       ),
-//     );
-//   }
-// }
-
-class PaymentAnalyticsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Payment Analytics'),
-      ),
-      body: Center(
-        child: Text('Payment Analytics Data Goes Here'),
-      ),
-    );
-  }
-}
-
-// class DashboardScreen extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Dashboard'),
-//       ),
-//       body: Center(
-//         child: Text('Dashboard Goes Here'),
-//       ),
-//     );
-//   }
-// }
-
-// class AProfileScreen extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Profile'),
-//       ),
-//       body: Center(
-//         child: Text('Profile Page Goes Here'),
+//         child: Text('Add Furniture Form Goes Here'),
 //       ),
 //     );
 //   }
