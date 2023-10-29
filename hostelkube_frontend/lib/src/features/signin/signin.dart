@@ -126,6 +126,7 @@ Future<String> getUserRoleFromFirebase(String email) async {
           ),
         ),
         backgroundColor: Colors.white,
+        centerTitle: true,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -178,8 +179,7 @@ Future<String> getUserRoleFromFirebase(String email) async {
               SizedBox(height: 16.0),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.orange,
-                  onPrimary: Colors.black,
+                  foregroundColor: Colors.black, backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),

@@ -104,6 +104,7 @@ Future<void> saveUserData(String userId, String name, String email, String mobil
           ),
         ),
         backgroundColor: Colors.white,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -227,8 +228,7 @@ Future<void> saveUserData(String userId, String name, String email, String mobil
                 // ... (Rest of your UI code)
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.orange,
-                    onPrimary: Colors.black,
+                    foregroundColor: Colors.black, backgroundColor: Colors.orange,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),

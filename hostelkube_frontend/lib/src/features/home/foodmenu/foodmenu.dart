@@ -129,6 +129,7 @@ class UserWeekMenuPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Food Menu'),
+        centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('weekMenus').snapshots(),
