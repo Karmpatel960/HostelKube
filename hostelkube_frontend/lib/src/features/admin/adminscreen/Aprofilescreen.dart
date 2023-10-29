@@ -162,7 +162,7 @@ bool validateFields() {
               SizedBox(height: 20),
               CircleAvatar(
                 radius: 60,
-                backgroundImage: AssetImage('profile_image.jpg'),
+                backgroundImage: AssetImage('./profile_image.jpg'),
               ),
               SizedBox(height: 20),
               Text(

@@ -11,29 +11,25 @@ import 'package:hostelkube_frontend/src/features/features.dart';
 import 'package:intl/intl.dart';
 
 
-
 class HomeScreen extends StatefulWidget {
   final ThemeMode themeMode;
   final String userId;
 
-  const HomeScreen({Key? key, this.themeMode = ThemeMode.light, required this.userId}) : super(key: key);
+  const HomeScreen({Key? key, this.themeMode = ThemeMode.light, required this.userId})
+      : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _HomeScreenState createState() => _HomeScreenState(themeMode, userId);
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode;
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Prince Hostel',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-        themeMode: _themeMode, // Use _themeMode here
-      home: HomePage(userId: widget.userId, themeMode: widget.themeMode, onThemeChanged: _toggleTheme),
-    );
+
+  _HomeScreenState(ThemeMode themeMode, String userId)
+      : _themeMode = themeMode, // Initialize _themeMode here
+        super() {
+    // Additional constructor code, if needed
   }
 
   void _toggleTheme() {
@@ -41,7 +37,40 @@ class _HomeScreenState extends State<HomeScreen> {
       _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     });
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Prince Hostel',
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: _themeMode,
+      home: HomePage(userId: widget.userId, themeMode: _themeMode, onThemeChanged: _toggleTheme),
+    );
+  }
 }
+
+
+// class _HomeScreenState extends State<HomeScreen> {
+//   ThemeMode _themeMode = ThemeMode.light;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Prince Hostel',
+//       theme: ThemeData.light(),
+//       darkTheme: ThemeData.dark(),
+//         themeMode: _themeMode, 
+//       home: HomePage(userId: widget.userId, themeMode: widget.themeMode, onThemeChanged: _toggleTheme),
+//     );
+//   }
+
+//   void _toggleTheme() {
+//     setState(() {
+//       _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+//     });
+//   }
+// }
 
 class HomePage extends StatefulWidget {
   final String userId;

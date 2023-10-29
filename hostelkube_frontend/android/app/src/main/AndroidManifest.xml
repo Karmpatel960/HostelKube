@@ -26,12 +26,12 @@
             </intent-filter>
         </activity>
         <!-- Correct placement of <queries> element inside <application> -->
-        <queries>
+        <!-- <queries>
             <intent>
                 <action android:name="android.intent.action.VIEW" />
                 <data android:mimeType="application/pdf" />
             </intent>
-        </queries>
+        </queries> -->
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

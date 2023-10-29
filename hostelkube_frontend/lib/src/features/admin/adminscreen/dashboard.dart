@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class DashboardDataCalculator {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-Future<double> calculateTotalCollection(String createdBy) async {
-  double totalCollection = 0;
+Future<int> calculateTotalCollection(String createdBy) async {
+  int totalCollection = 0;
 
   QuerySnapshot roomsQuery = await _firestore.collection('rooms').where('createdBy', isEqualTo: createdBy).get();
   for (QueryDocumentSnapshot roomSnapshot in roomsQuery.docs) {
@@ -13,7 +13,7 @@ Future<double> calculateTotalCollection(String createdBy) async {
 
     if (roomData.containsKey('users') && roomData.containsKey('pricePerBed')) {
       List<dynamic> users = roomData['users'];
-      double pricePerBed = roomData['pricePerBed'].toDouble();
+      int pricePerBed = (roomData['pricePerBed'] as int?) ?? 0; // Use 'as double?' and handle null
 
       totalCollection += pricePerBed * users.length;
     }
@@ -43,12 +43,12 @@ Future<int> calculateTotalRegisteredStudents(String userId) async {
 }
 
 
-Future<double> calculateTotalLightBillPayments() async {
-  double totalLightBillPayments = 0;
+Future<int> calculateTotalLightBillPayments() async {
+  int totalLightBillPayments = 0;
 
   QuerySnapshot billsQuery = await _firestore.collection('bills').get();
   for (QueryDocumentSnapshot billSnapshot in billsQuery.docs) {
-    double billAmount = billSnapshot['totalAmount'] ?? 0.0; 
+    int billAmount = (billSnapshot['totalAmount'] as int?) ?? 0;
     totalLightBillPayments += billAmount;
   }
 
@@ -77,9 +77,9 @@ Future<DashboardData> calculateDashboardData(String userId) async {
 }
 
 class DashboardData {
-  final double totalCollection;
+  final int  totalCollection;
   final int totalStudents;
-  final double totalLightBillPayments;
+  final int totalLightBillPayments;
   final int totalRooms;
 
   DashboardData({

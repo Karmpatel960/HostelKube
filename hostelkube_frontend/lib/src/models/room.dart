@@ -5,9 +5,9 @@ class RoomData {
   String roomNumber;
   int capacity;
   String description;
-  double pricePerBed;
+  int pricePerBed;
   String createdBy;
-  DateTime createdAt; // Change the type to DateTime
+  DateTime createdAt; 
   List<String> users;
 
   RoomData({

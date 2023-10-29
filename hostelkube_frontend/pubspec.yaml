@@ -24,9 +24,7 @@ dependencies:
   cloud_firestore: ^4.9.3
   firebase_database: ^10.2.7
   shared_preferences: ^2.2.1
-  pdf: any
-  path_provider: any
-  open_file: any
+  pdf: ^3.10.4 
   printing: ^5.11.0
   razorpay_web: ^1.4.2
   intl: ^0.18.1
