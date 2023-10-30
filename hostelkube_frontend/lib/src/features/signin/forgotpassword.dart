@@ -20,10 +20,15 @@ class PasswordPage extends StatelessWidget {
 class ForgotPasswordPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
 
-  Future<void> _resetPassword(BuildContext context) async {
-    final String email = emailController.text.trim();
+Future<void> _resetPassword(BuildContext context) async {
+  final String email = emailController.text.trim();
 
-    try {
+  try {
+    // Check if the user with the provided email exists
+    final user = await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
+
+    if (user.isNotEmpty) {
+      // User exists, send password reset email
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -31,15 +36,25 @@ class ForgotPasswordPage extends StatelessWidget {
           duration: Duration(seconds: 5),
         ),
       );
-    } catch (error) {
+    } else {
+      // User does not exist
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Password reset failed: $error'),
+          content: Text('User with email $email does not exist.'),
           duration: Duration(seconds: 5),
         ),
       );
     }
+  } catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Password reset failed: $error'),
+        duration: Duration(seconds: 5),
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

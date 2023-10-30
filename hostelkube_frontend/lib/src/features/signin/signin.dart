@@ -15,9 +15,8 @@ class _SignInScreenState extends State<SignInScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  ThemeMode themeMode = ThemeMode.light; // Initialize with a default theme
-void Function() onThemeChanged = () {}; // Initialize with an empty function
-
+  ThemeMode themeMode = ThemeMode.light; 
+void Function() onThemeChanged = () {}; 
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(

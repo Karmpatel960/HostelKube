@@ -18,7 +18,6 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     _checkAutoLogin();
 
-    // Simulate some time-taking initialization process.
    Future.delayed(Duration(seconds: 3), () {
     if (_mounted) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Welcome()));
@@ -27,13 +26,13 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void dispose() {
-    _mounted = false; // Set the flag to false when the widget is disposed.
+    _mounted = false; 
     super.dispose();
   }
 
 Future<void> _checkAutoLogin() async {
   if (!mounted) {
-    return; // Check if the widget is still mounted
+    return; 
   }
 
   final prefs = await SharedPreferences.getInstance();
@@ -43,7 +42,7 @@ Future<void> _checkAutoLogin() async {
     final userRole = await getUserRoleFromFirebase(userId); // Pass user ID
 
     if (!mounted) {
-      return; // Check if the widget is still mounted
+      return; 
     }
 
     Widget destinationScreen;
@@ -70,8 +69,6 @@ Future<void> _checkAutoLogin() async {
         final userRole = userData['selectedRole'];
         return userRole;
       }
-
-      // Handle the case where the user's data is not found in Firestore
       return 'user'; // Default role if not found
     } catch (error) {
       // Handle any potential errors, e.g., network issues, Firestore errors, etc.
