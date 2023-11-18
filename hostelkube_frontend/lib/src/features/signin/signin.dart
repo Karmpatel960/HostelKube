@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hostelkube_frontend/src/features/features.dart';
+import '../Signup/signup.dart';
+import './forgotpassword.dart';
 
-class SignInPage extends StatefulWidget {
+class SignInScreen extends StatefulWidget {
   @override
-  _SignInPageState createState() => _SignInPageState();
+  _SignInScreenState createState() => _SignInScreenState();
 }
 
-class _SignInPageState extends State<SignInPage> {
-  String selectedRole = 'user';
-
+class _SignInScreenState extends State<SignInScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  TextEditingController emailOrUsernameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  ThemeMode themeMode = ThemeMode.light; 
+void Function() onThemeChanged = () {}; 
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -24,63 +27,116 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
- void _signIn() async {
-  final apiUrl = Uri.parse("http://localhost:3000/user/login"); // Replace with your API URL
+  bool isValidEmail(String email) {
+    final emailRegExp = RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$');
+    return emailRegExp.hasMatch(email);
+  }
+
+  Future<void> _signIn() async {
+  final email = emailController.text;
+  final password = passwordController.text;
+
+  if (!isValidEmail(email)) {
+    _showSnackBar('Invalid email address');
+    return;
+  }
 
   try {
-    final response = await http.post(
-      apiUrl,
-      body: {
-        "email": emailOrUsernameController.text,
-        "password": passwordController.text,
-        "role": selectedRole,
-      },
+    final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email,
+      password: password,
     );
 
-    if (response.statusCode == 200) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => OTPVerificationPage(
-            email: emailOrUsernameController.text, // Pass the email
-          ),
-        ),
-      );
+    if (userCredential.user != null) {
+      final user = userCredential.user!;
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('userId', user.uid);
+
+      if (!user.emailVerified) {
+        await user.sendEmailVerification();
+        _showSnackBar(
+          'A verification link has been sent to your email address. Please check your email and click on the link to verify your email before signing in.',
+        );
+      } else {
+        final userId = user.uid;
+        final userRole = await getUserRoleFromFirebase(email);
+
+        if (userRole == 'admin') {
+          // Redirect to the admin page
+          Navigator.pushAndRemoveUntil(
+  context,
+  MaterialPageRoute(
+    builder: (context) => AdminHomePage(userId: userId)
+  ),(route) => false,
+);
+
+        } else {
+          // Redirect to the user/home page
+         Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(
+    builder: (context) => HomePage(userId: userId, themeMode: themeMode, onThemeChanged: onThemeChanged),
+  ),
+);
+
+
+        }
+      }
     } else {
-      // Sign-in failed, show an error message
       _showSnackBar('Sign-in failed');
     }
   } catch (error) {
-    // Handle network or other errors
     print(error);
-    _showSnackBar('Error occurred during sign-in');
+    _showSnackBar('Error occurred during sign-in: $error');
   }
 }
 
+Future<String> getUserRoleFromFirebase(String email) async {
+  try {
+    final usersCollection = FirebaseFirestore.instance.collection('users');
+    final querySnapshot = await usersCollection.where('email', isEqualTo: email).get();
+  
+    if (querySnapshot.docs.isNotEmpty) {
+      final userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+      final userRole = userData['selectedRole'];
+      return userRole;
+    }
+    
+    // Handle the case where the user's data is not found in Firestore
+    return 'user'; // Default role if not found
+  } catch (error) {
+    // Handle any potential errors, e.g., network issues, Firestore errors, etc.
+    print('Error while fetching user role: $error');
+    return 'user'; // Default role if there's an error
+  }
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Add the key to the Scaffold
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Center(
           child: Text(
             'Sign In',
             style: TextStyle(
-              color: Colors.black, // Text color
+              color: Colors.black,
             ),
           ),
         ),
-        backgroundColor: Colors.white, // Set the background color of the AppBar to white
+        backgroundColor: Colors.white,
+        centerTitle: true,
       ),
       body: Container(
         decoration: BoxDecoration(
-          color: Colors.white, // Set the background color to white
+          color: Colors.white,
         ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              // ... Rest of your UI code for the sign-in screen
+                 Icon(
                 Icons.account_circle,
                 size: 100.0,
                 color: Colors.black,
@@ -89,10 +145,11 @@ class _SignInPageState extends State<SignInPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: TextField(
-                  controller: emailOrUsernameController,
-                  style: TextStyle(color: Colors.black), // Change text color to black
+                  controller: emailController,
+                  style: TextStyle(color: Colors.black),
+                  keyboardType: TextInputType.emailAddress, // Use email keyboard type
                   decoration: InputDecoration(
-                    labelText: 'Email or Username',
+                    labelText: 'Email',
                     labelStyle: TextStyle(color: Colors.black),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -106,7 +163,7 @@ class _SignInPageState extends State<SignInPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: TextField(
                   controller: passwordController,
-                  style: TextStyle(color: Colors.black), // Change text color to black
+                  style: TextStyle(color: Colors.black),
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Password',
@@ -119,51 +176,14 @@ class _SignInPageState extends State<SignInPage> {
                 ),
               ),
               SizedBox(height: 16.0),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: DropdownButtonFormField<String>(
-                  value: selectedRole,
-                  items: ['user', 'admin','employee']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value, style: TextStyle(color: Colors.black)), // Change text color to black
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedRole = newValue!;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Role',
-                    labelStyle: TextStyle(color: Colors.black),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.0),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.orange,
-                  onPrimary: Colors.black,
+                  foregroundColor: Colors.black, backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
-                // onPressed: _signIn,
-
-                   onPressed: () {
-                  // Add navigation to the forgot password page
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(), // Replace with your SignUpPage widget
-                    ),
-                  );
-                },
+                onPressed: _signIn,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Text('Sign In', style: TextStyle(fontSize: 16.0)),
@@ -171,30 +191,28 @@ class _SignInPageState extends State<SignInPage> {
               ),
               TextButton(
                 onPressed: () {
-                  // Add navigation to the forgot password page
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => PasswordPage(), // Replace with your SignUpPage widget
+                      builder: (context) => PasswordPage(),
                     ),
                   );
                 },
                 child: Text(
                   'Forgot Password?',
-                  style: TextStyle(color: Colors.black), // Change text color to black
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
               TextButton(
                 onPressed: () {
-                  // Add navigation to the registration page
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => SignUpPage(), // Replace with your SignUpPage widget
+                      builder: (context) => SignUpPage(),
                     ),
                   );
                 },
                 child: Text(
                   "Don't have an account? Sign Up",
-                  style: TextStyle(color: Colors.black), // Change text color to black
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
             ],
@@ -204,4 +222,3 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 }
-

@@ -19,6 +19,16 @@ dependencies:
   google_fonts: ^4.0.4
   http: ^0.13.3
   fluttertoast: ^8.2.2
+  firebase_core: ^2.17.0
+  firebase_auth: ^4.10.1
+  cloud_firestore: ^4.9.3
+  firebase_database: ^10.2.7
+  shared_preferences: ^2.2.1
+  pdf: ^3.10.4 
+  printing: ^5.11.0
+  razorpay_web: ^1.4.2
+  intl: ^0.18.1
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +57,7 @@ flutter:
     - assets/Image6.png
     - assets/signin/signin_balls.png
     - assets/background.png
+    - assets/name.png
 
   # fonts:
     # Add your custom fonts if needed

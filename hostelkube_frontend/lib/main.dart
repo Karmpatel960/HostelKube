@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'src/router/router.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -14,7 +20,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       onGenerateRoute: Routes.generateRoute,
-      initialRoute: Routes.homeRoute, // Set your desired initial route here
+      initialRoute: Routes.homeRoute, 
     );
   }
 }

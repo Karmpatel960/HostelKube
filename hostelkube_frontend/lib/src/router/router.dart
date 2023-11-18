@@ -20,11 +20,11 @@ class Routes {
     }
 
     switch (settings.name) {
-      case homeRoute:
-        return MaterialPageRoute(builder: (_) => HomeScreen());
+      // case homeRoute:
+      //   return MaterialPageRoute(builder: (_) => HomeScreen());
 
-      case adminRoute:
-        return MaterialPageRoute(builder: (_) => AdminScreen());
+      // case adminRoute:
+      //   return MaterialPageRoute(builder: (_) => AdminHomePage());
 
       case loginRoute:
         return MaterialPageRoute(builder: (_) => LoginScreen());
@@ -33,7 +33,7 @@ class Routes {
         return MaterialPageRoute(builder: (_) => SignUpPage());
 
       case signInRoute: 
-        return MaterialPageRoute(builder: (_) => SignInPage());
+        return MaterialPageRoute(builder: (_) => SignInScreen());
 
       // case otpRoute: 
       //   return MaterialPageRoute(builder: (_) => OTPVerificationPage());

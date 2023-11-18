@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hostelkube_frontend/src/features/features.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../signin/signin.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -10,210 +10,259 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  final _auth = FirebaseAuth.instance;
+  final _formKey = GlobalKey<FormState>();
+
   String selectedRole = 'user';
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController mobileController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
-  String registrationMessage = ''; // Added variable to display registration message
+  String registrationMessage = '';
 
-  Future<void> signUp() async {
-    if (nameController.text.isEmpty ||
-      emailController.text.isEmpty ||
-      mobileController.text.isEmpty ||
-      passwordController.text.isEmpty) {
-    print("Empty fields");
-    return; // Prevent further execution if fields are empty
-  }
-  
-    final url = Uri.parse("http://localhost:3000/user/register"); // Replace with your backend API URL
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: json.encode({
-        "name": nameController.text,
-        "email": emailController.text,
-        "password": passwordController.text,
-        "phone_no": mobileController.text,
-        "role": selectedRole,
-      }),
-    );
+Future<void> signUp() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
 
-    if (response.statusCode == 200) {
-      print(200);
-      setState(() {
-        registrationMessage = 'Your account is registered'; // Set registration message
-      });
+      if (userCredential.user != null) {
+        await userCredential.user!.sendEmailVerification();
 
+        // Save the selected role to Cloud Firestore
+        await saveUserData(
+          userCredential.user!.uid,
+          nameController.text,
+          emailController.text,
+          mobileController.text,
+          selectedRole,
+        );
+
+        Fluttertoast.showToast(
+          msg: "Registration successful. Please verify your email.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+        // Clear text fields
+        nameController.clear();
+        emailController.clear();
+        mobileController.clear();
+        passwordController.clear();
+        // Navigate to the sign-in screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => SignInScreen(),
+          ),
+        );
+      }
+    } catch (e) {
       Fluttertoast.showToast(
-        msg: "Registration successful", // Toast message
+        msg: "Registration failed: $e",
         toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM, // Position of the toast message
-        timeInSecForIosWeb: 1, // Duration to display the toast message
-        backgroundColor: Colors.green, // Background color of the toast
-        textColor: Colors.white, // Text color of the toast
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
       );
-      // Handle successful registration and navigate to login page
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => SignInPage(), // Replace with your LoginScreen widget
-        ),
-      );
-    } else if (response.statusCode == 400) {
-      print(400);
-       setState(() {
-        registrationMessage = 'Please Enter all Details'; // Set registration message
-      });
-      // Handle validation error or other client-side error
-    } else {
-      print(420);
-      // Handle other errors (e.g., server errors)
     }
   }
+}
+
+Future<void> saveUserData(String userId, String name, String email, String mobile, String role) async {
+  final CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+
+  try {
+    await usersCollection.doc(userId).set({
+      'name': name,
+      'email': email,
+      'mobile': mobile,
+      'selectedRole': role,
+    });
+    print('Data saved to Cloud Firestore');
+  } catch (error) {
+    print('Error saving user data: $error');
+  }
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Sign Up',
-            style: TextStyle(
-              color: Colors.black, // Text color
-            ),
+        title: Text(
+          'Sign Up',
+          style: TextStyle(
+            color: Colors.black,
           ),
         ),
-        backgroundColor: Colors.white, // Set the background color of the AppBar to white
+        backgroundColor: Colors.white,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Icon(
-                Icons.account_circle,
-                size: 100.0,
-                color: Colors.black,
-              ),
-              SizedBox(height: 16.0),
-              TextField(
-                style: TextStyle(color: Colors.black),
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Icon(
+                  Icons.account_circle,
+                  size: 100.0,
+                  color: Colors.black,
                 ),
-              ),
-              SizedBox(height: 16.0),
-              TextField(
-                style: TextStyle(color: Colors.black),
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email or Username',
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.0),
-              TextField(
-                style: TextStyle(color: Colors.black),
-                controller: mobileController,
-                decoration: InputDecoration(
-                  labelText: 'Mobile Number',
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.0),
-              TextField(
-                style: TextStyle(color: Colors.black),
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.0),
-              DropdownButtonFormField<String>(
-                value: selectedRole,
-                items: ['user', 'admin', 'employee']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value, style: TextStyle(color: Colors.black)),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedRole = newValue!;
-                  });
-                },
-                decoration: InputDecoration(
-                  labelText: 'Role',
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.orange,
-                  onPrimary: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                onPressed: signUp,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Text('Sign Up', style: TextStyle(fontSize: 16.0)),
-                ),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                registrationMessage, // Display registration message
-                style: TextStyle(color: Colors.green), // Customize the text color
-              ),
-              TextButton(
-                onPressed: () {
-                  // Navigate to the sign-in screen
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => SignInPage(), // Replace with your LoginScreen widget
-                    ),
-                  );
-                },
-                child: Text(
-                  'Already have an account? Sign In',
+                SizedBox(height: 16.0),
+                 TextFormField(
                   style: TextStyle(color: Colors.black),
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                SizedBox(height: 16.0),
+                TextFormField(
+                  style: TextStyle(color: Colors.black),
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16.0),
+                TextFormField(
+                  style: TextStyle(color: Colors.black),
+                  controller: mobileController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: 'Mobile Number',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your mobile number';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16.0),
+                TextFormField(
+                  style: TextStyle(color: Colors.black),
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a password';
+                    }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16.0),
+                DropdownButtonFormField<String>(
+                  value: selectedRole,
+                  items: ['user', 'admin', 'employee']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value, style: TextStyle(color: Colors.black)),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedRole = newValue!;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Role',
+                    labelStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.0),
+                // ... (Rest of your UI code)
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black, backgroundColor: Colors.orange,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  onPressed: signUp,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text('Sign Up', style: TextStyle(fontSize: 16.0)),
+                  ),
+                ),
+                
+                SizedBox(height: 16.0),
+                Text(
+                  registrationMessage,
+                  style: TextStyle(color: Colors.green),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => SignInScreen(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Already have an account? Sign In',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
