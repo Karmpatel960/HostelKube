@@ -278,6 +278,3 @@ bool validateFields() {
     );
   }
 }
-
-
-
